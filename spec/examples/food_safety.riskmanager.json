@@ -1,0 +1,59 @@
+{
+  "module": "riskmanager",
+  "domain": "food_safety",
+  "instance": "foodsafety",
+  "objects": [
+    {
+      "role": "risk",
+      "name": "hazard_event",
+      "table": "hazard_events",
+      "description": "One way produce could reach a buyer unsafe, drawn as a bow-tie: a batch contaminated, spoiled in transit or mislabelled.",
+      "indexes": [
+        {
+          "name": "batch_scope",
+          "description": "Finds the hazards that apply to one stage of a batch's life, such as field, store or transport.",
+          "path": {
+            "field": "doc",
+            "path": "batch_scope"
+          }
+        }
+      ]
+    },
+    {
+      "role": "pathway",
+      "name": "route",
+      "table": "routes",
+      "description": "One way a hazard gets into a batch, such as dirty irrigation water or an unwashed crate, or one way its harm spreads once it has, such as a shared load or a late recall."
+    },
+    {
+      "role": "control",
+      "name": "control_measure",
+      "table": "control_measures",
+      "description": "One practice a farm or supplier runs to keep produce safe: washing, cold storage, crate cleaning, a supplier checklist, a recall procedure."
+    },
+    {
+      "role": "barrier",
+      "name": "control_point",
+      "table": "control_points",
+      "description": "One practice claimed to stand on one route, such as cold storage on the spoilage route at the collection point and not yet on the route from farm to depot."
+    },
+    {
+      "role": "evidence",
+      "name": "check",
+      "table": "checks",
+      "description": "One inspection, temperature log, lab result or spot check about one control point."
+    },
+    {
+      "role": "assessment",
+      "name": "rating",
+      "table": "ratings",
+      "description": "One rating of how likely an unsafe batch is and how serious the harm would be, before and after the practices as they are really followed."
+    },
+    {
+      "role": "action",
+      "name": "corrective_action",
+      "table": "corrective_actions",
+      "description": "One piece of work to fix a weak control point, with the person responsible and the date it is due."
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "module": "riskmanager",
+  "domain": "ai_safety",
+  "instance": "aisafety",
+  "objects": [
+    {
+      "role": "risk",
+      "name": "bowtie",
+      "table": "bowties",
+      "description": "One way an enterprise could lose control of something through its AI systems, drawn as a bow-tie. Data leaking out through a prompt, a retrieval index or an agent is the worked example.",
+      "indexes": [
+        {
+          "name": "category",
+          "description": "The register browse by category, which is a grouping this domain draws and the module does not.",
+          "path": {
+            "field": "doc",
+            "path": "category"
+          }
+        }
+      ]
+    },
+    {
+      "role": "pathway",
+      "name": "pathway",
+      "table": "pathways",
+      "description": "One route by which sensitive information escapes through an AI system, or one route by which the harm of that escape unfolds: a prompt pasted into an unapproved service, a document retrieved for the wrong user, a regulator told too late."
+    },
+    {
+      "role": "control",
+      "name": "control",
+      "table": "controls",
+      "description": "One safeguard the enterprise runs around its AI systems: an approved gateway, input filtering, permission-aware retrieval, a kill switch, an incident procedure."
+    },
+    {
+      "role": "barrier",
+      "name": "barrier",
+      "table": "barriers",
+      "description": "One safeguard claimed to stand on one route, such as input filtering on the prompt route and not yet on the agent tool-call route."
+    },
+    {
+      "role": "evidence",
+      "name": "evidence",
+      "table": "evidence_records",
+      "description": "One red-team result, log review, configuration export or audit finding about one barrier."
+    },
+    {
+      "role": "assessment",
+      "name": "assessment",
+      "table": "assessments",
+      "description": "One rating of how likely and how damaging a loss of control is judged to be, before and after the safeguards as they actually are."
+    },
+    {
+      "role": "action",
+      "name": "remediation",
+      "table": "remediations",
+      "description": "One piece of work to close a gap in the AI safeguards, with an owner and a date."
+    },
+    {
+      "name": "ai_system",
+      "table": "ai_systems",
+      "description": "One AI application, model or agent the enterprise runs. The AI safety register's own object: this module has no rule that touches it, and declares no role it could fill.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, opaque to callers.",
+          "primary": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "What the system is called inside the enterprise.",
+          "required": true
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "description": "What sort of system it is, in the enterprise's own words: a public chatbot, an internal copilot, a retrieval assistant, an autonomous agent."
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Who is accountable for the system, as the mount's own reference to a person or a team."
+        },
+        {
+          "name": "doc",
+          "type": "json",
+          "description": "Everything else the enterprise records about the system: its provider, the data classes it may see, the tools it may call."
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "description": "When the row was created."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "owner",
+          "description": "Finds the systems one owner answers for.",
+          "fields": [
+            "owner"
+          ]
+        }
+      ]
+    }
+  ]
+}

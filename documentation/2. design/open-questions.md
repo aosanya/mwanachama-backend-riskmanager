@@ -1,0 +1,83 @@
+# Open questions
+
+Flagged rather than assumed. Each one is a decision the module has not made;
+none is hidden behind a default that looks like an answer.
+
+## 1. Should stale evidence be a gap?
+
+A passing test from three years ago still makes a barrier `proven`, because
+the standing uses only the latest outcome. A barrier relied on for a year
+with no retest is exposed, and the register cannot say so.
+
+The shape is a retest window — a number of days after which the latest
+evidence no longer counts. The unsettled part is whose window it is: one for
+the mount, one per control, one per barrier, or one per risk band, with
+critical risks retested more often. A per-barrier column is the simplest and
+the easiest to leave unset; a window in the mount's settings needs the
+settings mechanism `spec` already has.
+
+## 2. Can a domain supply its own scales?
+
+Likelihood and impact are 1 to 5, and the bands are fixed at low 1–4, medium
+5–9, high 10–15, critical 16–25. A domain with a three-point scale, or a
+different matrix, cannot change either, because a domain spec may set a
+default and nothing else. Either the module accepts a scale in its settings,
+or a different rating shape is a different module.
+
+## 3. Retired barrier or removed barrier?
+
+A barrier with evidence or actions cannot be removed, because the record is
+part of the history. So a measure that was withdrawn — a control switched
+off — stays standing on its pathway forever, still counted, still judged. A
+`retired` state on a barrier would let it leave the live diagram and keep
+its history. Alternatives: a barrier whose maturity can regress to a
+`proposed` that means withdrawn, which overloads a word, or leaving the
+barrier and recording failing evidence, which is what happens today.
+
+## 4. Can a consequence be drilled into?
+
+`parent_pathway_id` takes any pathway, so a consequence can be the parent of
+a risk. The source conversation only drilled a threat. A consequence
+expanded as a bow-tie of its own — "regulatory action" as the top event of a
+bow-tie about what follows it — is a recognised extension of the method and
+would chain consequences into consequences. Nothing stops it and nothing
+rolls it up. Whether the whole-diagram read should follow a chain, and how
+far, is unsettled.
+
+## 5. How do actions relate to taskmanager?
+
+An action is a commitment with an owner, a due date and a status.
+`mwanachama-backend-taskmanager` already has work items, assignment and
+dependencies. Running both means a gap's remediation is tracked twice or not
+in the system people actually use. The options: an optional task reference on
+an action; actions that are tasks and a risk that only points at them; or
+leaving the module's actions as the light, self-contained thing it is. Each
+changes what `action` is, so this should be decided before a screen is built
+on it.
+
+## 6. How is the module mounted in wakala-api?
+
+Sibling modules that wakala-api mounts carry a `<module>.wakala.json` naming
+the objects the mount provisions, and wakala-api's `internal/specs/` holds
+the deployment specs. This module has neither, and mounting it is a change
+to a sibling repo, which needs the owner's go-ahead. The gateway the older
+modules joined is retired; wakala-api provisions, so no SQL mirror is
+needed.
+
+## 7. Owners are opaque strings
+
+`risk.owner`, `control.owner` and `action.owner` hold whatever the mount puts
+there. Nothing checks that the owner exists, is still a member, or may own a
+risk. Resolving them to actors, as a declared reference to the actor
+module's object, would give "everything this person owns" and "which owners
+have left", and would turn a typo from a silent gap into a refusal. It would
+also tie this module to the actor module's shape, which it does not know today.
+
+## 8. Is a gap an event?
+
+Gaps are computed when asked. Nothing is told when one opens — when evidence
+fails, when an action goes overdue, when a risk loses its owner. A
+notification would use `mwanachama-backend-comm`, which this module does not
+import. Out of scope for the first build; the question is whether it is
+ever this module's job, or a routine that calls `list_gaps` and tells
+someone.

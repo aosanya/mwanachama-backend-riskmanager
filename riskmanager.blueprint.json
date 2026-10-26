@@ -1,0 +1,549 @@
+{
+  "module": "riskmanager",
+  "objects": [
+    {
+      "role": "risk",
+      "description": "One bow-tie: the centre event that someone has decided is worth drawing, with the causes on its left and the consequences on its right. Whatever a domain is afraid of losing control of, it fills this role, and only the few fields beside the document mean the same in every domain.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, opaque to callers.",
+          "primary": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "The short human-readable label this bow-tie is known by in the register.",
+          "required": true
+        },
+        {
+          "name": "top_event",
+          "type": "text",
+          "description": "The centre of the bow-tie, stated precisely: the moment control of the hazard is lost. Threats are the ways it comes about and consequences are what follows, so a vague statement here makes both sides vague.",
+          "required": true
+        },
+        {
+          "name": "hazard",
+          "type": "text",
+          "description": "What could cause harm if control of it were lost. Often the same thing the top event is about, stated as a thing rather than as an event."
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Who is accountable for this risk, as the mount's own reference to a person or a role. Opaque to this module. A risk cannot open without one."
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "description": "Where the risk is in its life. The steps it may take between these is the module's rule, not the domain's, so the set is declared here.",
+          "default": "draft",
+          "values": [
+            "draft",
+            "open",
+            "accepted",
+            "retired"
+          ]
+        },
+        {
+          "name": "parent_pathway_id",
+          "type": "string",
+          "description": "The pathway on another risk that this one drills into, which is how a branch of one bow-tie becomes a bow-tie of its own. Empty for a risk that stands alone. Fixed at creation, so the drill-down tree can never be rewired into a loop.",
+          "immutable": true
+        },
+        {
+          "name": "doc",
+          "type": "json",
+          "description": "Everything true of this risk that only its domain gives meaning to — a category, a business unit, a regulation it falls under. Queried in place by path rather than parsed per row, so anything domain-shaped lives in here rather than in a column of its own."
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "description": "When the row was created."
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "description": "When the row was last written."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "status_owner",
+          "description": "The register listing, which filters on either or both.",
+          "fields": [
+            "status",
+            "owner"
+          ]
+        },
+        {
+          "name": "parent_pathway",
+          "description": "Finds the bow-ties that drill into one pathway.",
+          "fields": [
+            "parent_pathway_id"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "pathway",
+      "description": "One way along one side of a bow-tie: a route by which the top event can come about, or a route by which its consequences unfold. Both sides have the same shape, so one object serves both and the side says which.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, opaque to callers.",
+          "primary": true
+        },
+        {
+          "name": "risk_id",
+          "type": "string",
+          "description": "The bow-tie this pathway belongs to. Fixed at creation.",
+          "required": true,
+          "immutable": true
+        },
+        {
+          "name": "side",
+          "type": "enum",
+          "description": "Which half of the bow-tie the pathway is on. A threat leads to the top event and is guarded by preventive barriers; a consequence leads away from it and is guarded by mitigating ones. Fixed at creation, because every barrier standing on it takes its meaning from the side.",
+          "immutable": true,
+          "values": [
+            "threat",
+            "consequence"
+          ]
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "The short label for this route, as it would be written on the diagram.",
+          "required": true
+        },
+        {
+          "name": "scenario",
+          "type": "text",
+          "description": "A concrete example of the route being taken, in enough detail that someone could test a barrier against it."
+        },
+        {
+          "name": "doc",
+          "type": "json",
+          "description": "Everything true of this pathway that only its domain gives meaning to. Queried in place by path rather than parsed per row."
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "description": "When the row was created."
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "description": "When the row was last written."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "risk_side",
+          "description": "Reads one half of one bow-tie.",
+          "fields": [
+            "risk_id",
+            "side"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "control",
+      "description": "One measure an organisation operates — a technical safeguard, a procedure, an approval step. It is declared once and may stand on many pathways of many bow-ties, which is what makes a common-cause failure visible: the same control failing everywhere it was relied on.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, opaque to callers.",
+          "primary": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "What the control is called. Unique, because two controls with one name make a failure impossible to attribute.",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "description": "What the control does and what it is meant to stop, detect or limit."
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Who operates the control, as the mount's own reference to a person, a role or a team. Opaque to this module. Not the same person as a risk's owner: one is accountable for the exposure and the other for the safeguard."
+        },
+        {
+          "name": "doc",
+          "type": "json",
+          "description": "Everything true of this control that only its domain gives meaning to — the system it runs in, the vendor, the standard it implements. Queried in place by path rather than parsed per row."
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "description": "When the row was created."
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "description": "When the row was last written."
+        }
+      ]
+    },
+    {
+      "role": "barrier",
+      "description": "One control standing on one pathway: the claim that this measure interrupts this route. The claim is what gets assessed, not the control, because a control that works in one place may not reach another.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, opaque to callers.",
+          "primary": true
+        },
+        {
+          "name": "risk_id",
+          "type": "string",
+          "description": "A copy of the bow-tie the pathway belongs to, held here so reading every barrier of a risk or every risk a control serves does not join through the pathway on each read.",
+          "immutable": true
+        },
+        {
+          "name": "pathway_id",
+          "type": "string",
+          "description": "The route the control stands on. Fixed at creation.",
+          "required": true,
+          "immutable": true
+        },
+        {
+          "name": "control_id",
+          "type": "string",
+          "description": "The measure standing there. Fixed at creation.",
+          "required": true,
+          "immutable": true
+        },
+        {
+          "name": "position",
+          "type": "int",
+          "description": "Where along the pathway the barrier stands, counting from the end furthest from the top event. Equal positions fall back to the order they were placed in.",
+          "default": "0"
+        },
+        {
+          "name": "design",
+          "type": "enum",
+          "description": "Whether the control, as designed, addresses the specific route it is claimed to stand on. A judgement by whoever assesses it, not a measurement.",
+          "default": "unassessed",
+          "values": [
+            "unassessed",
+            "adequate",
+            "partial",
+            "inadequate"
+          ]
+        },
+        {
+          "name": "coverage",
+          "type": "enum",
+          "description": "Whether the control is deployed across everything the route runs through — every application, user, agent and data source it applies to. A control on part of a route leaves the rest open. A judgement by whoever assesses it.",
+          "default": "unassessed",
+          "values": [
+            "unassessed",
+            "adequate",
+            "partial",
+            "inadequate"
+          ]
+        },
+        {
+          "name": "maturity",
+          "type": "enum",
+          "description": "How far the barrier has got. Reaching tested or monitored needs at least one piece of evidence, so a barrier cannot claim to have been tried with nothing on record.",
+          "default": "proposed",
+          "values": [
+            "proposed",
+            "designed",
+            "deployed",
+            "tested",
+            "monitored"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "description": "What is missing or weak about this barrier, and why it was rated as it was."
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "description": "When the row was created."
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "description": "When the row was last written."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "pathway_control",
+          "description": "Finds the placement a pathway and a control identify, and stops one control standing twice on one route.",
+          "fields": [
+            "pathway_id",
+            "control_id"
+          ],
+          "unique": true
+        },
+        {
+          "name": "risk",
+          "description": "Reads every barrier of one bow-tie.",
+          "fields": [
+            "risk_id"
+          ]
+        },
+        {
+          "name": "control",
+          "description": "Finds everywhere one control is relied on, which is the question a common-cause failure asks.",
+          "fields": [
+            "control_id"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "evidence",
+      "description": "One piece of proof about one barrier: a test that was run, a log that was read, an audit that was done. Append-only: a barrier that stopped working is shown by recording a further, failing piece of evidence, never by editing the earlier passing one, because a record that can be rewritten answers no question about the past.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, opaque to callers.",
+          "primary": true
+        },
+        {
+          "name": "barrier_id",
+          "type": "string",
+          "description": "The barrier this is evidence about.",
+          "required": true
+        },
+        {
+          "name": "kind",
+          "type": "enum",
+          "description": "How the evidence was obtained. An incident is a real occurrence that showed the barrier working or failing, as opposed to a test of it.",
+          "values": [
+            "test",
+            "log",
+            "audit",
+            "configuration",
+            "incident"
+          ]
+        },
+        {
+          "name": "outcome",
+          "type": "enum",
+          "description": "What the evidence showed. Partial means the barrier did some of what it was claimed to do, which is a finding and not a pass.",
+          "values": [
+            "pass",
+            "partial",
+            "fail"
+          ]
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "description": "What was done and what it showed, in enough detail that someone else could repeat it.",
+          "required": true
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "description": "Where the underlying material lives — a link, a ticket, a path — so the claim can be checked against the thing itself."
+        },
+        {
+          "name": "recorded_by",
+          "type": "string",
+          "description": "Who recorded it, supplied by the mount from the caller and never read from the request."
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamp",
+          "description": "When the evidence was obtained, according to whoever obtained it. Takes the time the service received it when left out. This is the field evidence is ordered by."
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "description": "When this service received it. Separate from recorded_at because evidence is often entered after the fact."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "barrier_recorded",
+          "description": "The query the module exists to answer: one barrier's evidence, in time order, newest last.",
+          "fields": [
+            "barrier_id",
+            "recorded_at"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "assessment",
+      "description": "One rating of one risk at one moment: how likely and how severe it is judged to be. Append-only, so the history of a rating is the history of how the organisation's view of the risk moved.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, opaque to callers.",
+          "primary": true
+        },
+        {
+          "name": "risk_id",
+          "type": "string",
+          "description": "The risk this rates.",
+          "required": true
+        },
+        {
+          "name": "kind",
+          "type": "enum",
+          "description": "Which exposure the rating describes. Inherent is the risk before any barrier is counted, residual is what remains with the barriers as they actually are, and target is what the owner has decided is tolerable.",
+          "values": [
+            "inherent",
+            "residual",
+            "target"
+          ]
+        },
+        {
+          "name": "likelihood",
+          "type": "int",
+          "description": "How likely the top event is, on a scale of 1 (rare) to 5 (almost certain)."
+        },
+        {
+          "name": "impact",
+          "type": "int",
+          "description": "How severe the consequences are, on a scale of 1 (negligible) to 5 (severe)."
+        },
+        {
+          "name": "rationale",
+          "type": "text",
+          "description": "Why the rating is what it is, so a later reader can disagree with the reasoning and not only the number."
+        },
+        {
+          "name": "assessed_by",
+          "type": "string",
+          "description": "Who made the rating, supplied by the mount from the caller and never read from the request."
+        },
+        {
+          "name": "assessed_at",
+          "type": "timestamp",
+          "description": "When the rating was made, according to whoever made it. Takes the time the service received it when left out. This is the field ratings are ordered by."
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "description": "When this service received it."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "risk_kind_assessed",
+          "description": "Reads the current rating of one kind, and its history, for one risk.",
+          "fields": [
+            "risk_id",
+            "kind",
+            "assessed_at"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "action",
+      "description": "One piece of work to close a gap: strengthen a barrier, test one, put one where none stands. It carries an owner and a due date, because a gap without them is an observation and not a commitment.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Storage key, opaque to callers.",
+          "primary": true
+        },
+        {
+          "name": "risk_id",
+          "type": "string",
+          "description": "The risk this work is for. Fixed at creation.",
+          "required": true,
+          "immutable": true
+        },
+        {
+          "name": "barrier_id",
+          "type": "string",
+          "description": "The barrier the work is about, when it is about one. Empty for work about the risk as a whole. Fixed at creation.",
+          "immutable": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "The short label for the work.",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "description": "What is to be done, and what done looks like."
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Who is to do it, as the mount's own reference to a person or a team. Opaque to this module."
+        },
+        {
+          "name": "due_at",
+          "type": "timestamp",
+          "description": "When it is due. Empty when no date has been agreed, which is itself reported as a gap."
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "description": "Where the work is. Done and dropped are the end of the road: dropped says the gap is accepted as it is, and is told apart from done so that it is never mistaken for a fix.",
+          "default": "open",
+          "values": [
+            "open",
+            "in_progress",
+            "done",
+            "dropped"
+          ]
+        },
+        {
+          "name": "closed_at",
+          "type": "timestamp",
+          "description": "When the work was done or dropped. Empty while it is still going."
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "description": "When the row was created."
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "description": "When the row was last written."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "risk_status",
+          "description": "Reads the open work of one bow-tie.",
+          "fields": [
+            "risk_id",
+            "status"
+          ]
+        },
+        {
+          "name": "status_due",
+          "description": "Finds the work that has gone past its date.",
+          "fields": [
+            "status",
+            "due_at"
+          ]
+        }
+      ]
+    }
+  ]
+}

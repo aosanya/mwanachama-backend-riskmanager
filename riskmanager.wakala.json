@@ -1,0 +1,14 @@
+{
+  "module": "riskmanager",
+  "domain": "wakala",
+  "instance": "app",
+  "objects": [
+    { "role": "risk", "name": "risk", "table": "risks", "description": "One thing an organisation has decided could go badly wrong, drawn as a bow-tie, with someone accountable for it." },
+    { "role": "pathway", "name": "pathway", "table": "pathways", "description": "One way a risk could come about, or one way its consequences unfold." },
+    { "role": "control", "name": "control", "table": "controls", "description": "One measure the organisation operates to stop, detect or limit something going wrong." },
+    { "role": "barrier", "name": "barrier", "table": "barriers", "description": "A control standing on one pathway, and how well it is judged to hold there." },
+    { "role": "evidence", "name": "evidence", "table": "evidence_records", "description": "A test, log, audit or incident that shows whether a barrier works." },
+    { "role": "assessment", "name": "assessment", "table": "assessments", "description": "A dated rating of how likely a risk is and how serious it would be." },
+    { "role": "action", "name": "action", "table": "actions", "description": "A piece of work, with an owner and a date, to close a gap." }
+  ]
+}

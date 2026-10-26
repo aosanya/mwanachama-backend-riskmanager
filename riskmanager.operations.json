@@ -1,0 +1,694 @@
+{
+  "operations": {
+    "create_risk": {
+      "method": "POST",
+      "path": "/risks",
+      "call": "CreateRisk",
+      "action": "riskmanager.risk.create",
+      "status": 201,
+      "title": "Open a risk register entry",
+      "description": "Start a new bow-tie by naming its centre event. A risk always starts as a draft, whatever status the body names, and moves on through its own address once it has an owner. A risk may name the pathway on another risk it drills into, which is fixed from then on.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "get_risk": {
+      "method": "GET",
+      "path": "/risks/{riskID}",
+      "call": "GetRisk",
+      "action": "riskmanager.risk.read",
+      "title": "Read risk",
+      "description": "Read one risk by its storage key, without its threats, consequences or barriers. The bow-tie address returns those too.",
+      "args": [
+        {
+          "from": "path",
+          "as": "riskID",
+          "description": "The risk to read."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_risks": {
+      "method": "GET",
+      "path": "/risks",
+      "call": "ListRisks",
+      "action": "riskmanager.risk.list",
+      "title": "List risks",
+      "description": "List the risks in the register, oldest first. Narrow by status, owner or the pathway a risk drills into, and search by words with query, which matches the title, the top event and the hazard without regard to case. Empty filters match everything.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "update_risk": {
+      "method": "PUT",
+      "path": "/risks/{riskID}",
+      "call": "UpdateRisk",
+      "action": "riskmanager.risk.update",
+      "title": "Update risk",
+      "description": "Replace a risk's title, top event, hazard, owner and document. The status changes only through its own address and the parent pathway never changes, so neither is read from this body. A risk that is open or accepted cannot be left without an owner, and a retired risk takes no changes.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        },
+        {
+          "from": "path",
+          "as": "riskID",
+          "into": "ID",
+          "description": "The risk to update. The address decides, not the body."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "set_risk_status": {
+      "method": "POST",
+      "path": "/risks/{riskID}/status",
+      "call": "SetRiskStatus",
+      "action": "riskmanager.risk.set_status",
+      "title": "Set risk status",
+      "description": "Move a risk through its life: draft to open, open to accepted, back again, and on to retired from anywhere. Opening needs an owner, accepting needs a residual rating on record, and retired is the end of the road.",
+      "args": [
+        {
+          "from": "path",
+          "as": "riskID",
+          "description": "The risk to move."
+        },
+        {
+          "from": "body",
+          "as": "status",
+          "required": true,
+          "field": "Risk.status"
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "create_pathway": {
+      "method": "POST",
+      "path": "/pathways",
+      "call": "CreatePathway",
+      "action": "riskmanager.pathway.create",
+      "status": 201,
+      "title": "Add threat or consequence",
+      "description": "Add one route to a bow-tie: a threat that leads to the top event, or a consequence that follows it. The side is fixed here and cannot change afterwards, because every barrier standing on the route takes its meaning from it.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "get_pathway": {
+      "method": "GET",
+      "path": "/pathways/{pathwayID}",
+      "call": "GetPathway",
+      "action": "riskmanager.pathway.read",
+      "title": "Read threat or consequence",
+      "description": "Read one pathway by its storage key.",
+      "args": [
+        {
+          "from": "path",
+          "as": "pathwayID",
+          "description": "The pathway to read."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "update_pathway": {
+      "method": "PUT",
+      "path": "/pathways/{pathwayID}",
+      "call": "UpdatePathway",
+      "action": "riskmanager.pathway.update",
+      "title": "Update threat or consequence",
+      "description": "Replace a pathway's title, scenario and document. The risk and the side never change, so neither is read from this body.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        },
+        {
+          "from": "path",
+          "as": "pathwayID",
+          "into": "ID",
+          "description": "The pathway to update. The address decides, not the body."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "delete_pathway": {
+      "method": "DELETE",
+      "path": "/pathways/{pathwayID}",
+      "call": "DeletePathway",
+      "action": "riskmanager.pathway.delete",
+      "status": 204,
+      "title": "Delete threat or consequence",
+      "description": "Remove a pathway from its bow-tie. Refused while any barrier stands on it or any risk drills into it, because deleting it would silently drop that work.",
+      "args": [
+        {
+          "from": "path",
+          "as": "pathwayID",
+          "description": "The pathway to delete."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "create_control": {
+      "method": "POST",
+      "path": "/controls",
+      "call": "CreateControl",
+      "action": "riskmanager.control.create",
+      "status": 201,
+      "title": "Declare control",
+      "description": "Declare a measure the organisation operates. A control is declared once and may then stand on many pathways of many bow-ties. Its name must be unique.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "get_control": {
+      "method": "GET",
+      "path": "/controls/{controlID}",
+      "call": "GetControl",
+      "action": "riskmanager.control.read",
+      "title": "Read control",
+      "description": "Read one control by its storage key.",
+      "args": [
+        {
+          "from": "path",
+          "as": "controlID",
+          "description": "The control to read."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_controls": {
+      "method": "GET",
+      "path": "/controls",
+      "call": "ListControls",
+      "action": "riskmanager.control.list",
+      "title": "List controls",
+      "description": "List the declared controls by name. Narrow by the owner who operates them. An empty owner matches every control.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "update_control": {
+      "method": "PUT",
+      "path": "/controls/{controlID}",
+      "call": "UpdateControl",
+      "action": "riskmanager.control.update",
+      "title": "Update control",
+      "description": "Replace a control's name, description, owner and document. A new name must still be unique.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        },
+        {
+          "from": "path",
+          "as": "controlID",
+          "into": "ID",
+          "description": "The control to update. The address decides, not the body."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "place_barrier": {
+      "method": "POST",
+      "path": "/barriers",
+      "call": "PlaceBarrier",
+      "action": "riskmanager.barrier.place",
+      "status": 201,
+      "title": "Place barrier",
+      "description": "Stand a control on a pathway: the claim that this measure interrupts this route. On a threat it is a preventive barrier and on a consequence a mitigating one. One control stands once on one pathway. A barrier cannot be placed already claiming to be tested, because nothing can yet be on record for it.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_barriers": {
+      "method": "GET",
+      "path": "/barriers",
+      "call": "ListBarriers",
+      "action": "riskmanager.barrier.list",
+      "title": "List barriers",
+      "description": "List barriers in the order they stand along their pathway. Narrow by risk, by pathway, or by control, which finds everywhere one control is relied on.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "update_barrier": {
+      "method": "PUT",
+      "path": "/barriers/{barrierID}",
+      "call": "UpdateBarrier",
+      "action": "riskmanager.barrier.update",
+      "title": "Assess barrier",
+      "description": "Change what is judged about a barrier: its position, its design, its coverage, its maturity and its notes. Only the fields named are changed. Reaching tested or monitored needs at least one piece of evidence on record.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        },
+        {
+          "from": "path",
+          "as": "barrierID",
+          "into": "ID",
+          "description": "The barrier to change. The address decides, not the body."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "remove_barrier": {
+      "method": "DELETE",
+      "path": "/barriers/{barrierID}",
+      "call": "RemoveBarrier",
+      "action": "riskmanager.barrier.remove",
+      "status": 204,
+      "title": "Remove barrier",
+      "description": "Take a control off a pathway. Refused once the barrier has evidence on record or an action refers to it, because that history belongs to the record.",
+      "args": [
+        {
+          "from": "path",
+          "as": "barrierID",
+          "description": "The barrier to remove."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "record_evidence": {
+      "method": "POST",
+      "path": "/evidence",
+      "call": "RecordEvidence",
+      "action": "riskmanager.evidence.record",
+      "status": 201,
+      "title": "Record evidence",
+      "description": "Record one piece of proof about a barrier: a test, a log, an audit, a configuration check or an incident, and whether it passed, partly passed or failed. Append-only: a barrier that stopped working is shown by recording a further, failing piece, never by editing an earlier one. Who recorded it comes from the caller and is never read from the request.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        },
+        {
+          "from": "caller",
+          "as": "recorded_by",
+          "into": "RecordedBy",
+          "description": "Who is recording it, resolved from the session rather than the request."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_evidence": {
+      "method": "GET",
+      "path": "/evidence",
+      "call": "ListEvidence",
+      "action": "riskmanager.evidence.list",
+      "title": "List evidence",
+      "description": "List evidence oldest first. Narrow by barrier, and bound it by the time the evidence was obtained with from and to.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "record_assessment": {
+      "method": "POST",
+      "path": "/assessments",
+      "call": "RecordAssessment",
+      "action": "riskmanager.assessment.record",
+      "status": 201,
+      "title": "Record assessment",
+      "description": "Rate a risk: how likely its top event is and how severe the consequences would be, each from 1 to 5, as an inherent, residual or target rating. Append-only, so the history of a rating is the history of how the organisation's view moved. Who rated it comes from the caller and is never read from the request.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        },
+        {
+          "from": "caller",
+          "as": "assessed_by",
+          "into": "AssessedBy",
+          "description": "Who is rating it, resolved from the session rather than the request."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_assessments": {
+      "method": "GET",
+      "path": "/assessments",
+      "call": "ListAssessments",
+      "action": "riskmanager.assessment.list",
+      "title": "List assessments",
+      "description": "List ratings oldest first. Narrow by risk and by kind. The last of a kind is the current one.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "create_action": {
+      "method": "POST",
+      "path": "/actions",
+      "call": "CreateAction",
+      "action": "riskmanager.action.create",
+      "status": 201,
+      "title": "Raise action",
+      "description": "Commit to a piece of work that closes a gap, about a whole risk or about one of its barriers. It starts open. A barrier named here must belong to the same risk.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_actions": {
+      "method": "GET",
+      "path": "/actions",
+      "call": "ListActions",
+      "action": "riskmanager.action.list",
+      "title": "List actions",
+      "description": "List actions, oldest first. Narrow by risk, by barrier or by status.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "update_action": {
+      "method": "PUT",
+      "path": "/actions/{actionID}",
+      "call": "UpdateAction",
+      "action": "riskmanager.action.update",
+      "title": "Update action",
+      "description": "Replace an action's title, description, owner and due date. The risk and the barrier never change and the status changes only through its own address, so none is read from this body. A closed action takes no changes.",
+      "args": [
+        {
+          "from": "body",
+          "whole": true
+        },
+        {
+          "from": "path",
+          "as": "actionID",
+          "into": "ID",
+          "description": "The action to update. The address decides, not the body."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "set_action_status": {
+      "method": "POST",
+      "path": "/actions/{actionID}/status",
+      "call": "SetActionStatus",
+      "action": "riskmanager.action.set_status",
+      "title": "Set action status",
+      "description": "Move an action along: open, in progress, then done or dropped. Dropped says the gap is accepted as it is, and is kept apart from done so it is never mistaken for a fix. Both are the end of the road.",
+      "args": [
+        {
+          "from": "path",
+          "as": "actionID",
+          "description": "The action to move."
+        },
+        {
+          "from": "body",
+          "as": "status",
+          "required": true,
+          "field": "Action.status"
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_threats": {
+      "method": "GET",
+      "path": "/threats",
+      "call": "Threats",
+      "action": "riskmanager.threat.list",
+      "title": "What are the threats",
+      "description": "What are the threats? The ways a top event can come about, one row each, with how many barriers stand against it and how many bow-ties drill into it, so an unguarded threat shows at once. Pass risk_id for one risk's threats, or query to find threats by words across every risk, matched against the title and the scenario.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_consequences": {
+      "method": "GET",
+      "path": "/consequences",
+      "call": "Consequences",
+      "action": "riskmanager.consequence.list",
+      "title": "What are the consequences",
+      "description": "What are the consequences? What follows once the top event has happened, one row each, with how many barriers stand against it. Pass risk_id for one risk's consequences, or query to find consequences by words across every risk, matched against the title and the scenario.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_preventive_measures": {
+      "method": "GET",
+      "path": "/preventive-measures",
+      "call": "PreventiveMeasures",
+      "action": "riskmanager.preventive_measure.list",
+      "title": "What are the preventive measures",
+      "description": "What are the preventive measures against this? The barriers standing on threats, which stop the top event happening, each with its control, its latest evidence and its standing: proven, weak, unproven or failing. Pass risk_id for everything preventing one risk, pathway_id for one threat, or query to match words in the threat or the control.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_mitigating_measures": {
+      "method": "GET",
+      "path": "/mitigating-measures",
+      "call": "MitigatingMeasures",
+      "action": "riskmanager.mitigating_measure.list",
+      "title": "What are the mitigating measures",
+      "description": "What are the mitigating measures against this? The barriers standing on consequences, which limit the damage once the top event has happened, each with its control, its latest evidence and its standing: proven, weak, unproven or failing. Pass risk_id for everything mitigating one risk, pathway_id for one consequence, or query to match words in the consequence or the control.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_reliance": {
+      "method": "GET",
+      "path": "/controls/{controlID}/reliance",
+      "call": "Reliance",
+      "action": "riskmanager.control.reliance",
+      "title": "What relies on this control",
+      "description": "What relies on this control? Every barrier the control stands in, across every risk, with the threat or consequence it stands on and its standing, so a control that fails shows everywhere it was depended on. This is the common-cause question.",
+      "args": [
+        {
+          "from": "path",
+          "as": "controlID",
+          "description": "The control to trace."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "get_bowtie": {
+      "method": "GET",
+      "path": "/risks/{riskID}/bowtie",
+      "call": "Bowtie",
+      "action": "riskmanager.risk.bowtie",
+      "title": "Read bow-tie",
+      "description": "The whole picture of one risk: its centre event, its current inherent, residual and target ratings, every threat and consequence with the barriers standing on each, the latest evidence for each barrier, the risks that drill into each pathway, and the actions raised.",
+      "args": [
+        {
+          "from": "path",
+          "as": "riskID",
+          "description": "The risk to draw."
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "list_gaps": {
+      "method": "GET",
+      "path": "/gaps",
+      "call": "Gaps",
+      "action": "riskmanager.gap.list",
+      "title": "List gaps",
+      "description": "Where the bow-ties are weak, worked out on the spot and never stored, ranked high to low. High: a threat or consequence nothing stands on, a barrier whose latest evidence failed, and work gone past its date. Medium: a risk with no owner, no ratings or only one side, a barrier rated partial or inadequate, a control nobody operates, and work with no date. Low: a barrier not yet assessed or not yet tested. Each gap carries its severity. Pass risk_id for one risk, kind for one sort of gap, severity (high, medium or low) for one rank, and limit and offset to page through the list. Retired risks have none.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    }
+  },
+  "errors": {
+    "ErrInvalid": 400,
+    "ErrInvalidReference": 400,
+    "ErrConflict": 409,
+    "ErrRiskNotFound": 404,
+    "ErrPathwayNotFound": 404,
+    "ErrControlNotFound": 404,
+    "ErrBarrierNotFound": 404,
+    "ErrActionNotFound": 404
+  }
+}
