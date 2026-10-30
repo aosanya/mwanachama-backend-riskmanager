@@ -59,6 +59,18 @@ leaving the module's actions as the light, self-contained thing it is. Each
 changes what `action` is, so this should be decided before a screen is built
 on it.
 
+Built as the smallest of the three, pending the owner: an optional `task_ref`
+on the action, the task module's own stable reference to the task that tracks
+it, with an `ActionFilter.TaskRef` to find the actions a task tracks. It is
+opaque unless the mount passes `WithTasks(directory)`, any shared
+`identity.Owner`, in which case a reference that does not resolve is refused as
+`ErrInvalidReference`. The task module implements no `identity.Owner` today, so
+nothing resolves yet. The action stays a self-contained commitment with its own
+owner, date and status; nothing is copied to or from the task, so a done task
+does not close the action. Actions that are tasks, or no link at all, remain
+open for the owner, and the column can be dropped without losing any other
+data.
+
 ## 6. How is the module mounted in wakala-api?
 
 Sibling modules that wakala-api mounts carry a `<module>.wakala.json` naming

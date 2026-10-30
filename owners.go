@@ -42,3 +42,22 @@ func (m *riskManager) ownerKnown(ctx context.Context, what, owner string) error 
 	}
 	return nil
 }
+
+func WithTasks(tasks identity.Owner) Option {
+	return func(m *riskManager) { m.tasks = tasks }
+}
+
+func (m *riskManager) taskKnown(ctx context.Context, ref string) error {
+	if m.tasks == nil || ref == "" {
+		return nil
+	}
+	_, _, err := m.tasks.Resolve(ctx, ref)
+	switch {
+	case err == nil:
+		return nil
+	case errors.Is(err, identity.ErrNotFound), errors.Is(err, identity.ErrNotOwned), errors.Is(err, identity.ErrInvalidRaw):
+		return fmt.Errorf("%w: the task %q is not one the task register knows", ErrInvalidReference, ref)
+	default:
+		return err
+	}
+}

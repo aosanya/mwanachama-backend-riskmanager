@@ -510,7 +510,7 @@
       "call": "UpdateAction",
       "action": "riskmanager.action.update",
       "title": "Update action",
-      "description": "Replace an action's title, description, owner and due date. The risk and the barrier never change and the status changes only through its own address, so none is read from this body. A closed action takes no changes.",
+      "description": "Replace an action's title, description, owner, task reference and due date. The risk and the barrier never change and the status changes only through its own address, so none is read from this body. A closed action takes no changes.",
       "args": [
         {
           "from": "body",

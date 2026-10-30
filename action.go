@@ -16,6 +16,9 @@ func (m *riskManager) CreateAction(ctx context.Context, a Action) (Action, error
 	if err := m.ownerKnown(ctx, "action's owner", a.Owner); err != nil {
 		return Action{}, err
 	}
+	if err := m.taskKnown(ctx, a.TaskRef); err != nil {
+		return Action{}, err
+	}
 	if err := dueDateIsAnInstant(a.DueAt); err != nil {
 		return Action{}, err
 	}
@@ -73,6 +76,9 @@ func (m *riskManager) ListActions(ctx context.Context, filter ActionFilter) ([]A
 	if filter.Owner != "" {
 		q = q.Where("owner = ?", filter.Owner)
 	}
+	if filter.TaskRef != "" {
+		q = q.Where("task_ref = ?", filter.TaskRef)
+	}
 	if filter.Status != "" {
 		q = q.Where("status = ?", string(filter.Status))
 	}
@@ -94,6 +100,8 @@ func (m *riskManager) UpdateAction(ctx context.Context, a Action) (Action, error
 	held.Title = a.Title
 	held.Description = a.Description
 	priorOwner := held.Owner
+	priorTask := held.TaskRef
+	held.TaskRef = a.TaskRef
 	held.Owner = a.Owner
 	held.DueAt = a.DueAt
 	held.UpdatedAt = m.now()
@@ -103,6 +111,11 @@ func (m *riskManager) UpdateAction(ctx context.Context, a Action) (Action, error
 	}
 	if err := m.ownerChanged(ctx, "action's owner", priorOwner, held.Owner); err != nil {
 		return Action{}, err
+	}
+	if priorTask != held.TaskRef {
+		if err := m.taskKnown(ctx, held.TaskRef); err != nil {
+			return Action{}, err
+		}
 	}
 	if err := dueDateIsAnInstant(held.DueAt); err != nil {
 		return Action{}, err

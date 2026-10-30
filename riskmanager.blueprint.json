@@ -500,6 +500,11 @@
           "description": "Who is to do it, as the mount's own reference to a person or a team. Opaque to this module."
         },
         {
+          "name": "task_ref",
+          "type": "string",
+          "description": "The task, in the task module, that tracks this work, as that module's own stable reference to it. Empty when the work is tracked only here. Opaque to this module unless the mount supplies a directory to check it against."
+        },
+        {
           "name": "due_at",
           "type": "timestamp",
           "description": "When it is due. Empty when no date has been agreed, which is itself reported as a gap."

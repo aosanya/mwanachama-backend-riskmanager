@@ -71,6 +71,7 @@ type riskManager struct {
 	clock        func() time.Time
 	owners       identity.Owner
 	ownerObjects []string
+	tasks        identity.Owner
 }
 
 func NewRiskManager(db *gorm.DB, s *spec.Spec, opts ...Option) (RiskManager, error) {
