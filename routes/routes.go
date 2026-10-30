@@ -14,6 +14,7 @@ type Mount = dispatch.Mount
 var Sentinels = map[string]error{
 	"ErrInvalid":          riskmanager.ErrInvalid,
 	"ErrInvalidReference": riskmanager.ErrInvalidReference,
+	"ErrNoStableIdentity": riskmanager.ErrNoStableIdentity,
 	"ErrConflict":         riskmanager.ErrConflict,
 	"ErrRiskNotFound":     riskmanager.ErrRiskNotFound,
 	"ErrPathwayNotFound":  riskmanager.ErrPathwayNotFound,

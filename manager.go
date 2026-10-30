@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"github.com/aosanya/mwanachama-backend-shared/identity"
 	"github.com/aosanya/mwanachama-backend-shared/spec"
 	"github.com/aosanya/mwanachama-backend-shared/specstore"
 
@@ -20,6 +21,8 @@ const DefaultPage = 200
 const stampLayout = "2006-01-02T15:04:05.000000Z07:00"
 
 type RiskManager interface {
+	identity.Owner
+
 	CreateRisk(ctx context.Context, r Risk) (Risk, error)
 	GetRisk(ctx context.Context, id string) (Risk, error)
 	ListRisks(ctx context.Context, filter RiskFilter) ([]Risk, error)

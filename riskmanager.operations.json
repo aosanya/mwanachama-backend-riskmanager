@@ -698,6 +698,7 @@
   "errors": {
     "ErrInvalid": 400,
     "ErrInvalidReference": 400,
+    "ErrNoStableIdentity": 400,
     "ErrConflict": 409,
     "ErrRiskNotFound": 404,
     "ErrPathwayNotFound": 404,
