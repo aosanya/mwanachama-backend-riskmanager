@@ -77,6 +77,25 @@ module's object, would give "everything this person owns" and "which owners
 have left", and would turn a typo from a silent gap into a refusal. It would
 also tie this module to the actor module's shape, which it does not know today.
 
+Built without the actor module's shape. `NewRiskManager(db, s, WithOwners(owners, objects...))`
+takes any shared `identity.Owner` as the directory of who may own. When it is
+set, a non-empty `risk.owner`, `control.owner` or `action.owner` has to
+`Resolve` through it: a string that is not a raw, another module's raw or a
+raw with no row is refused as `ErrInvalidReference` (a 400), and the optional
+`objects` list restricts which resolved objects may own (for example only
+`actor`). An owner that has not changed on an update is not checked again, so
+a row kept before the directory was set can still be edited. With no
+directory the owner stays the opaque string it was. An empty owner is still a
+gap and not a refusal. "Everything this person owns" is the `owner` filter on
+`list_risks`, `list_controls` and `list_actions`.
+
+What is still open, and belongs to the owner and the actor repo: the actor
+module implements no `identity.Owner` today, so the raw an actor would have,
+and whether a group may own, are undecided; and the shared engine has no
+field-level reference (`spec.Field` has no `refers`; only an operation
+argument can be marked), so the three owner fields are declared as references
+in this module's code, in `owners.go`, and not in the blueprint.
+
 ## 8. Is a gap an event?
 
 Gaps are computed when asked. Nothing is told when one opens — when evidence

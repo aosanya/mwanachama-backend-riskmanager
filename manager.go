@@ -66,12 +66,14 @@ type RiskManager interface {
 }
 
 type riskManager struct {
-	db    *gorm.DB
-	st    *store
-	clock func() time.Time
+	db           *gorm.DB
+	st           *store
+	clock        func() time.Time
+	owners       identity.Owner
+	ownerObjects []string
 }
 
-func NewRiskManager(db *gorm.DB, s *spec.Spec) (RiskManager, error) {
+func NewRiskManager(db *gorm.DB, s *spec.Spec, opts ...Option) (RiskManager, error) {
 	st, err := newStore(db, s, map[string]any{
 		roleRisk:       models.Risk{},
 		rolePathway:    models.Pathway{},
@@ -84,7 +86,11 @@ func NewRiskManager(db *gorm.DB, s *spec.Spec) (RiskManager, error) {
 	if err != nil {
 		return nil, fmt.Errorf("NewRiskManager: %w", err)
 	}
-	return &riskManager{db: db, st: st, clock: time.Now}, nil
+	m := &riskManager{db: db, st: st, clock: time.Now}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m, nil
 }
 
 func (m *riskManager) now() string { return m.clock().UTC().Format(stampLayout) }

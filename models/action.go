@@ -17,6 +17,7 @@ type Action struct {
 type ActionFilter struct {
 	RiskID    string       `json:"risk_id" query:"risk_id"`
 	BarrierID string       `json:"barrier_id" query:"barrier_id"`
+	Owner     string       `json:"owner" query:"owner"`
 	Status    ActionStatus `json:"status" query:"status"`
 	Limit     int          `json:"limit" query:"limit"`
 }

@@ -13,6 +13,9 @@ func (m *riskManager) CreateAction(ctx context.Context, a Action) (Action, error
 	if err := m.checks(roleAction, a); err != nil {
 		return Action{}, err
 	}
+	if err := m.ownerKnown(ctx, "action's owner", a.Owner); err != nil {
+		return Action{}, err
+	}
 	if err := dueDateIsAnInstant(a.DueAt); err != nil {
 		return Action{}, err
 	}
@@ -67,6 +70,9 @@ func (m *riskManager) ListActions(ctx context.Context, filter ActionFilter) ([]A
 	if filter.BarrierID != "" {
 		q = q.Where("barrier_id = ?", filter.BarrierID)
 	}
+	if filter.Owner != "" {
+		q = q.Where("owner = ?", filter.Owner)
+	}
 	if filter.Status != "" {
 		q = q.Where("status = ?", string(filter.Status))
 	}
@@ -87,11 +93,15 @@ func (m *riskManager) UpdateAction(ctx context.Context, a Action) (Action, error
 
 	held.Title = a.Title
 	held.Description = a.Description
+	priorOwner := held.Owner
 	held.Owner = a.Owner
 	held.DueAt = a.DueAt
 	held.UpdatedAt = m.now()
 
 	if err := m.checks(roleAction, held); err != nil {
+		return Action{}, err
+	}
+	if err := m.ownerChanged(ctx, "action's owner", priorOwner, held.Owner); err != nil {
 		return Action{}, err
 	}
 	if err := dueDateIsAnInstant(held.DueAt); err != nil {

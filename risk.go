@@ -12,6 +12,9 @@ func (m *riskManager) CreateRisk(ctx context.Context, r Risk) (Risk, error) {
 	if err := m.checks(roleRisk, r); err != nil {
 		return Risk{}, err
 	}
+	if err := m.ownerKnown(ctx, "risk's owner", r.Owner); err != nil {
+		return Risk{}, err
+	}
 	if err := m.parentIsLive(ctx, r.ParentPathwayID); err != nil {
 		return Risk{}, err
 	}
@@ -66,11 +69,15 @@ func (m *riskManager) UpdateRisk(ctx context.Context, r Risk) (Risk, error) {
 	held.Title = r.Title
 	held.TopEvent = r.TopEvent
 	held.Hazard = r.Hazard
+	priorOwner := held.Owner
 	held.Owner = r.Owner
 	held.Doc = r.Doc
 	held.UpdatedAt = m.now()
 
 	if err := m.checks(roleRisk, held); err != nil {
+		return Risk{}, err
+	}
+	if err := m.ownerChanged(ctx, "risk's owner", priorOwner, held.Owner); err != nil {
 		return Risk{}, err
 	}
 	if held.Status != models.StatusDraft && held.Owner == "" {

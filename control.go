@@ -9,6 +9,9 @@ func (m *riskManager) CreateControl(ctx context.Context, c Control) (Control, er
 	if err := m.checks(roleControl, c); err != nil {
 		return Control{}, err
 	}
+	if err := m.ownerKnown(ctx, "control's owner", c.Owner); err != nil {
+		return Control{}, err
+	}
 	if err := m.nameIsFree(ctx, c.Name); err != nil {
 		return Control{}, err
 	}
@@ -62,11 +65,15 @@ func (m *riskManager) UpdateControl(ctx context.Context, c Control) (Control, er
 
 	held.Name = c.Name
 	held.Description = c.Description
+	priorOwner := held.Owner
 	held.Owner = c.Owner
 	held.Doc = c.Doc
 	held.UpdatedAt = m.now()
 
 	if err := m.checks(roleControl, held); err != nil {
+		return Control{}, err
+	}
+	if err := m.ownerChanged(ctx, "control's owner", priorOwner, held.Owner); err != nil {
 		return Control{}, err
 	}
 	if err := m.update(ctx, roleControl, held.ID, held); err != nil {
