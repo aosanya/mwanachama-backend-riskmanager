@@ -162,19 +162,6 @@ func containing(q *gorm.DB, term string, columns ...string) *gorm.DB {
 	return q.Where("("+strings.Join(clauses, " OR ")+")", args...)
 }
 
-func mentions(term string, texts ...string) bool {
-	term = strings.ToLower(strings.TrimSpace(term))
-	if term == "" {
-		return true
-	}
-	for _, t := range texts {
-		if strings.Contains(strings.ToLower(t), term) {
-			return true
-		}
-	}
-	return false
-}
-
 func isRFC3339(s string) bool {
 	_, err := time.Parse(time.RFC3339, s)
 	return err == nil

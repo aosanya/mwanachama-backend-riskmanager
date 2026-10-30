@@ -129,18 +129,21 @@ standing ignores maturity, and the gaps include owners, ratings and work.
 
 ## Scale
 
-`Gaps` builds one bow-tie per risk and then evaluates it, so it makes a
-fixed number of queries per risk — it is N+1 over risks. That is fine for a
-register of tens or hundreds of risks, which is the MVP, and not for
-thousands. `limit` and `offset` bound the size of the answer and not the
-work behind it: every risk is still evaluated and ranked before a page is cut,
-because the ranking needs all of them.
+`Gaps` reads the register in seven queries however many risks it holds: the
+risks to review, then the pathways, barriers, controls, evidence, ratings and
+actions of all of them at once, each scoped by a subquery on the risks rather
+than a list of ids, so the number of parameters is fixed too. The bow-ties are
+assembled in memory and ranked together. `limit` and `offset` still cut the
+ranked list after every risk has been evaluated, because the ranking needs all
+of them, so the work grows with the register but the number of round trips does
+not. The drill-downs are not read, because no gap looks at them.
 
-The measure and pathway questions load in bulk, not per row: pathways first,
-then their barriers, controls and evidence in one query each, and the risk
-titles in one more. But `query` on the measure questions is applied after
-the load, over everything on that side that `risk_id` or `pathway_id` leaves,
-so a free-text question asked of a whole large register loads the whole side
-first. The pathway questions push their text match into SQL.
+`query` on the measure questions is matched in SQL: the barriers, their
+pathways, risks and controls are joined, the text is matched against the
+pathway's title and scenario and the control's name and description, the
+ranked order is applied and `limit` cuts it, so only the measures asked for
+are loaded. The pathway questions did this already.
 
-Both are filed on the board: [todo.md](../3.%20implementation/todo.md).
+The tests that hold this are `gaps_scale_test.go` (the query count is the same
+for 3 risks and 150, and one risk's gaps are the gaps its bow-tie reports
+alone) and `measures_scale_test.go` (the rows loaded for one match out of 60).

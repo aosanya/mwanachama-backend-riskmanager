@@ -3,6 +3,8 @@ package riskmanager
 import (
 	"context"
 	"fmt"
+
+	"gorm.io/gorm"
 )
 
 func (m *riskManager) Threats(ctx context.Context, filter PathwayFilter) ([]PathwaySummary, error) {
@@ -71,20 +73,22 @@ func (m *riskManager) MitigatingMeasures(ctx context.Context, filter MeasureFilt
 }
 
 func (m *riskManager) measuresOn(ctx context.Context, side Side, filter MeasureFilter) ([]Measure, error) {
-	pathways, err := m.pathwaysAsked(ctx, side, filter)
+	inScope, err := m.measureScope(ctx, side, filter)
+	if err != nil || !inScope {
+		return []Measure{}, err
+	}
+	barriers, err := listOf[Barrier](m, m.rankedBarriersOn(ctx, side, filter), roleBarrier)
 	if err != nil {
 		return nil, err
 	}
-	if len(pathways) == 0 {
+	if len(barriers) == 0 {
 		return []Measure{}, nil
 	}
-	byID := make(map[string]Pathway, len(pathways))
-	ids := make([]string, len(pathways))
-	for i, p := range pathways {
-		byID[p.ID] = p
-		ids[i] = p.ID
+	pathwayIDs := make([]string, len(barriers))
+	for i, b := range barriers {
+		pathwayIDs[i] = b.PathwayID
 	}
-	barriers, err := m.asmBarriersOn(ctx, ids)
+	pathways, err := m.asmPathwaysByID(ctx, asmUnique(pathwayIDs))
 	if err != nil {
 		return nil, err
 	}
@@ -92,51 +96,47 @@ func (m *riskManager) measuresOn(ctx context.Context, side Side, filter MeasureF
 	if err != nil {
 		return nil, err
 	}
-	measures, err := m.asmMeasures(ctx, placed, byID)
-	if err != nil {
-		return nil, err
-	}
-	return narrowed(measures, filter.Query, capped(filter.Limit)), nil
+	return m.asmMeasures(ctx, placed, pathways)
 }
 
-func (m *riskManager) pathwaysAsked(ctx context.Context, side Side, filter MeasureFilter) ([]Pathway, error) {
+func (m *riskManager) rankedBarriersOn(ctx context.Context, side Side, filter MeasureFilter) *gorm.DB {
+	barriers, pathways := m.st.Table(roleBarrier), m.st.Table(rolePathway)
+	risks, controls := m.st.Table(roleRisk), m.st.Table(roleControl)
+	q := m.db.WithContext(ctx).Table(barriers).Select(barriers+".*").
+		Joins("JOIN "+pathways+" ON "+pathways+".id = "+barriers+".pathway_id").
+		Joins("LEFT JOIN "+risks+" ON "+risks+".id = "+pathways+".risk_id").
+		Joins("LEFT JOIN "+controls+" ON "+controls+".id = "+barriers+".control_id").
+		Where(pathways+".side = ?", string(side))
+	if filter.RiskID != "" {
+		q = q.Where(pathways+".risk_id = ?", filter.RiskID)
+	}
+	if filter.PathwayID != "" {
+		q = q.Where(pathways+".id = ?", filter.PathwayID)
+	}
+	q = containing(q, filter.Query, pathways+".title", pathways+".scenario", controls+".name", controls+".description")
+	return q.Order(risks + ".created_at").Order(risks + ".id").
+		Order(pathways + ".created_at").Order(pathways + ".id").
+		Order(barriers + `."position"`).Order(barriers + ".created_at").
+		Limit(capped(filter.Limit))
+}
+
+func (m *riskManager) measureScope(ctx context.Context, side Side, filter MeasureFilter) (bool, error) {
 	if filter.PathwayID != "" {
 		p, err := m.GetPathway(ctx, filter.PathwayID)
 		if err != nil {
-			return nil, err
+			return false, err
 		}
 		if p.Side != side {
-			return nil, fmt.Errorf("%w: the pathway %q is a %s, not a %s", ErrInvalid, p.Title, p.Side, side)
+			return false, fmt.Errorf("%w: the pathway %q is a %s, not a %s", ErrInvalid, p.Title, p.Side, side)
 		}
-		if filter.RiskID != "" && p.RiskID != filter.RiskID {
-			return nil, nil
-		}
-		return []Pathway{p}, nil
+		return filter.RiskID == "" || p.RiskID == filter.RiskID, nil
 	}
 	if filter.RiskID != "" {
 		if _, err := m.GetRisk(ctx, filter.RiskID); err != nil {
-			return nil, err
+			return false, err
 		}
 	}
-	q := m.q(ctx, rolePathway).Where("side = ?", string(side))
-	if filter.RiskID != "" {
-		q = q.Where("risk_id = ?", filter.RiskID)
-	}
-	return listOf[Pathway](m, q.Order("created_at"), rolePathway)
-}
-
-func narrowed(measures []Measure, query string, limit int) []Measure {
-	out := make([]Measure, 0, len(measures))
-	for _, ms := range measures {
-		if !mentions(query, ms.Pathway.Title, ms.Pathway.Scenario, ms.Control.Name, ms.Control.Description) {
-			continue
-		}
-		out = append(out, ms)
-		if len(out) == limit {
-			break
-		}
-	}
-	return out
+	return true, nil
 }
 
 func (m *riskManager) Reliance(ctx context.Context, controlID string) ([]Measure, error) {
