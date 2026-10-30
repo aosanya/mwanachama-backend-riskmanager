@@ -90,6 +90,11 @@ func (m *riskManager) rateInto(ctx context.Context, b *models.Bowtie) error {
 	if err != nil {
 		return err
 	}
+	b.Inherent, b.Residual, b.Target = latestRatings(held)
+	return nil
+}
+
+func latestRatings(held []Assessment) (inherent, residual, target *models.Rated) {
 	latest := map[AssessmentKind]Assessment{}
 	for _, a := range held {
 		seen, ok := latest[a.Kind]
@@ -97,10 +102,7 @@ func (m *riskManager) rateInto(ctx context.Context, b *models.Bowtie) error {
 			latest[a.Kind] = a
 		}
 	}
-	b.Inherent = ratedOf(latest, AssessmentInherent)
-	b.Residual = ratedOf(latest, AssessmentResidual)
-	b.Target = ratedOf(latest, AssessmentTarget)
-	return nil
+	return ratedOf(latest, AssessmentInherent), ratedOf(latest, AssessmentResidual), ratedOf(latest, AssessmentTarget)
 }
 
 func ratedOf(latest map[AssessmentKind]Assessment, kind AssessmentKind) *models.Rated {

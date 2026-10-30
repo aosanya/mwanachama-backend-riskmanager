@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/aosanya/mwanachama-backend-shared/spec"
 	"github.com/aosanya/mwanachama-backend-shared/specstore"
@@ -101,7 +102,16 @@ func (m *riskManager) take(q *gorm.DB, role string, out any, notFound error) err
 }
 
 func listOf[T any](m *riskManager, q *gorm.DB, role string) ([]T, error) {
-	return specstore.List[T](m.st, q, role)
+	return specstore.List[T](m.st, unlimited(q), role)
+}
+
+func unlimited(q *gorm.DB) *gorm.DB {
+	if c, ok := q.Statement.Clauses["LIMIT"]; ok {
+		if l, ok := c.Expression.(clause.Limit); ok && l.Limit != nil {
+			return q
+		}
+	}
+	return q.Limit(-1)
 }
 
 func (m *riskManager) insert(ctx context.Context, role string, v any) error {

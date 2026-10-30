@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"gorm.io/gorm"
+
 	"github.com/aosanya/mwanachama-backend-riskmanager/models"
 )
 
@@ -11,32 +13,37 @@ func (m *riskManager) Gaps(ctx context.Context, filter GapFilter) ([]Gap, error)
 	if err := gapFilterKnown(filter); err != nil {
 		return nil, err
 	}
-	risks, err := m.risksToReview(ctx, filter.RiskID)
+	reviewed, err := m.reviewedRisks(ctx, filter.RiskID)
+	if err != nil {
+		return nil, err
+	}
+	risks, err := listOf[Risk](m, reviewed().Order("created_at"), roleRisk)
+	if err != nil {
+		return nil, err
+	}
+	bowties, err := m.bowtiesOf(ctx, risks, func() *gorm.DB { return reviewed().Select("id") })
 	if err != nil {
 		return nil, err
 	}
 	now := m.clock()
 	ranked := []Gap{}
-	for _, r := range risks {
-		b, err := m.Bowtie(ctx, r.ID)
-		if err != nil {
-			return nil, err
-		}
+	for _, b := range bowties {
 		ranked = append(ranked, b.Gaps(now)...)
 	}
 	models.RankGaps(ranked)
 	return pageOfGaps(narrowedGaps(ranked, filter), filter), nil
 }
 
-func (m *riskManager) risksToReview(ctx context.Context, riskID string) ([]Risk, error) {
-	if riskID != "" {
-		r, err := m.GetRisk(ctx, riskID)
-		if err != nil {
-			return nil, err
-		}
-		return []Risk{r}, nil
+func (m *riskManager) reviewedRisks(ctx context.Context, riskID string) (func() *gorm.DB, error) {
+	if riskID == "" {
+		return func() *gorm.DB {
+			return m.q(ctx, roleRisk).Where("status <> ?", string(StatusRetired))
+		}, nil
 	}
-	return listOf[Risk](m, m.q(ctx, roleRisk).Where("status <> ?", string(StatusRetired)).Order("created_at"), roleRisk)
+	if _, err := m.GetRisk(ctx, riskID); err != nil {
+		return nil, err
+	}
+	return func() *gorm.DB { return m.q(ctx, roleRisk).Where("id = ?", riskID) }, nil
 }
 
 func narrowedGaps(gaps []Gap, filter GapFilter) []Gap {

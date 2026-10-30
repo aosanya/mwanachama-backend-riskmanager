@@ -67,15 +67,18 @@ func (m *riskManager) asmPlace(ctx context.Context, barriers []Barrier) ([]model
 	}
 
 	for _, b := range barriers {
-		held := evidenceByBarrier[b.ID]
-		placed := models.Placed{Barrier: b, Control: controlByID[b.ControlID], EvidenceCount: len(held)}
-		if len(held) > 0 {
-			latest := held[len(held)-1]
-			placed.Latest = &latest
-		}
-		out = append(out, placed)
+		out = append(out, placedOf(b, controlByID[b.ControlID], evidenceByBarrier[b.ID]))
 	}
 	return out, nil
+}
+
+func placedOf(b Barrier, c Control, held []Evidence) models.Placed {
+	placed := models.Placed{Barrier: b, Control: c, EvidenceCount: len(held)}
+	if len(held) > 0 {
+		latest := held[len(held)-1]
+		placed.Latest = &latest
+	}
+	return placed
 }
 
 func (m *riskManager) asmPathwaysByID(ctx context.Context, ids []string) (map[string]Pathway, error) {
