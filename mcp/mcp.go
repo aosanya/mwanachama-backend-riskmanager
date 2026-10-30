@@ -9,6 +9,8 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/aosanya/mwanachama-backend-shared/dispatch"
+
 	riskmanager "github.com/aosanya/mwanachama-backend-riskmanager"
 	"github.com/aosanya/mwanachama-backend-riskmanager/routes"
 )
@@ -64,7 +66,7 @@ func withInstance(raw json.RawMessage) (map[string]any, error) {
 
 func handlerFor(name string, resolve ManagerResolver, m routes.Mount) mcp.ToolHandler {
 	return func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-		out, err := call(ctx, name, req.Params.Arguments, resolve, m)
+		out, err := call(ctx, name, req.Params.Arguments, metaOf(req), resolve, m)
 		if err != nil {
 			return &mcp.CallToolResult{
 				IsError: true,
@@ -79,7 +81,7 @@ func handlerFor(name string, resolve ManagerResolver, m routes.Mount) mcp.ToolHa
 	}
 }
 
-func call(ctx context.Context, name string, raw json.RawMessage, resolve ManagerResolver, m routes.Mount) (any, error) {
+func call(ctx context.Context, name string, raw json.RawMessage, meta map[string]any, resolve ManagerResolver, m routes.Mount) (any, error) {
 	args := map[string]json.RawMessage{}
 	if len(raw) > 0 {
 		if err := json.Unmarshal(raw, &args); err != nil {
@@ -105,10 +107,17 @@ func call(ctx context.Context, name string, raw json.RawMessage, resolve Manager
 	}
 	for _, t := range tools {
 		if t.Name == name {
-			return t.Invoke(ctx, rest)
+			return t.Handle(ctx, dispatch.Request{Arguments: rest, Meta: meta})
 		}
 	}
 	return nil, fmt.Errorf("no tool named %s", name)
+}
+
+func metaOf(req *mcp.CallToolRequest) map[string]any {
+	if req == nil || req.Params == nil {
+		return nil
+	}
+	return req.Params.Meta
 }
 
 func envelope(name string, out any) (any, string) {
