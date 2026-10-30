@@ -92,6 +92,13 @@ barriers, the same weakness is behind several risks, and fixing the control
 once fixes them all. The risks are named in each row, so the answer reads as
 a list of what is exposed.
 
+`GET /controls?failing=true` asks the same question of every control at once.
+It lists the controls that stand on at least one barrier whose latest evidence
+is not a pass, the one standing on the most such barriers first and ties by
+name, each carrying the count as `failing_barriers`. The owner and limit
+filters still apply, and barriers of retired risks are not counted. The count
+is derived on each call and never stored.
+
 ## Worked examples
 
 These use the data-leak bow-tie from the source conversation. The pathway and

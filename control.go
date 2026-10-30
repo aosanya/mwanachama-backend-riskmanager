@@ -39,6 +39,9 @@ func (m *riskManager) GetControl(ctx context.Context, id string) (Control, error
 }
 
 func (m *riskManager) ListControls(ctx context.Context, filter ControlFilter) ([]Control, error) {
+	if filter.Failing {
+		return m.failingControls(ctx, filter)
+	}
 	q := m.q(ctx, roleControl)
 	if filter.Owner != "" {
 		q = q.Where("owner = ?", filter.Owner)
@@ -70,4 +73,52 @@ func (m *riskManager) UpdateControl(ctx context.Context, c Control) (Control, er
 		return Control{}, err
 	}
 	return held, nil
+}
+
+type failingCount struct {
+	ControlID string
+	Failing   int
+}
+
+func (m *riskManager) failingControls(ctx context.Context, filter ControlFilter) ([]Control, error) {
+	controls, barriers := m.st.Table(roleControl), m.st.Table(roleBarrier)
+	risks, evidence := m.st.Table(roleRisk), m.st.Table(roleEvidence)
+	q := m.db.WithContext(ctx).Table(evidence+" AS latest").
+		Select("b.control_id AS control_id, COUNT(*) AS failing").
+		Joins("JOIN "+barriers+" b ON b.id = latest.barrier_id").
+		Joins("JOIN "+risks+" r ON r.id = b.risk_id").
+		Joins("JOIN "+controls+" c ON c.id = b.control_id").
+		Where("r.status <> ?", string(StatusRetired)).
+		Where("latest.outcome <> ?", string(OutcomePass)).
+		Where("NOT EXISTS (SELECT 1 FROM " + evidence + " later WHERE later.barrier_id = latest.barrier_id AND " +
+			"(later.recorded_at > latest.recorded_at OR (later.recorded_at = latest.recorded_at AND later.created_at > latest.created_at)))")
+	if filter.Owner != "" {
+		q = q.Where("c.owner = ?", filter.Owner)
+	}
+	var counts []failingCount
+	if err := q.Group("b.control_id, c.name").Order("failing DESC").Order("c.name").Limit(capped(filter.Limit)).Scan(&counts).Error; err != nil {
+		return nil, err
+	}
+	out := make([]Control, 0, len(counts))
+	if len(counts) == 0 {
+		return out, nil
+	}
+	ids := make([]string, len(counts))
+	for i, c := range counts {
+		ids[i] = c.ControlID
+	}
+	held, err := listOf[Control](m, m.q(ctx, roleControl).Where("id IN ?", ids), roleControl)
+	if err != nil {
+		return nil, err
+	}
+	byID := make(map[string]Control, len(held))
+	for _, c := range held {
+		byID[c.ID] = c
+	}
+	for _, c := range counts {
+		control := byID[c.ControlID]
+		control.FailingBarriers = c.Failing
+		out = append(out, control)
+	}
+	return out, nil
 }

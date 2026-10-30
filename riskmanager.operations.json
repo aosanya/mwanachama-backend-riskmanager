@@ -242,7 +242,7 @@
       "call": "ListControls",
       "action": "riskmanager.control.list",
       "title": "List controls",
-      "description": "List the declared controls by name. Narrow by the owner who operates them. An empty owner matches every control.",
+      "description": "List the declared controls by name. Narrow by the owner who operates them. An empty owner matches every control. Pass failing=true to see only the controls that stand on barriers whose latest evidence is not a pass, the weakest shared control first: ranked by how many such barriers it stands on, then by name, each carrying that count as failing_barriers. Barriers of retired risks are not counted.",
       "args": [
         {
           "from": "query",
