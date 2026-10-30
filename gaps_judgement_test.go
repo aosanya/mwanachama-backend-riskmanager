@@ -102,7 +102,7 @@ func TestEveryGapKindHasTheSeverityTheModuleDeclaresForIt(t *testing.T) {
 		models.GapPathwayUnguarded: models.SeverityHigh, models.GapBarrierFailing: models.SeverityHigh, models.GapActionOverdue: models.SeverityHigh,
 		models.GapRiskUnowned: models.SeverityMedium, models.GapRiskOneSided: models.SeverityMedium, models.GapRiskUnrated: models.SeverityMedium,
 		models.GapControlUnowned: models.SeverityMedium, models.GapActionUndated: models.SeverityMedium,
-		models.GapBarrierDesign: models.SeverityMedium, models.GapBarrierCoverage: models.SeverityMedium,
+		models.GapBarrierDesign: models.SeverityMedium, models.GapBarrierCoverage: models.SeverityMedium, models.GapBarrierStale: models.SeverityMedium,
 		models.GapBarrierUnassessed: models.SeverityLow, models.GapBarrierUntested: models.SeverityLow,
 	}
 	for _, kind := range seedGapKindConstants(t) {

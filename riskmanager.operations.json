@@ -667,7 +667,7 @@
       "call": "Gaps",
       "action": "riskmanager.gap.list",
       "title": "List gaps",
-      "description": "Where the bow-ties are weak, worked out on the spot and never stored, ranked high to low. High: a threat or consequence nothing stands on, a barrier whose latest evidence failed, and work gone past its date. Medium: a risk with no owner, no ratings or only one side, a barrier rated partial or inadequate, a control nobody operates, and work with no date. Low: a barrier not yet assessed or not yet tested. Each gap carries its severity. Pass risk_id for one risk, kind for one sort of gap, severity (high, medium or low) for one rank, and limit and offset to page through the list. Retired risks have none.",
+      "description": "Where the bow-ties are weak, worked out on the spot and never stored, ranked high to low. High: a threat or consequence nothing stands on, a barrier whose latest evidence failed, and work gone past its date. Medium: a risk with no owner, no ratings or only one side, a barrier rated partial or inadequate, a barrier whose latest evidence is older than its retest window, a control nobody operates, and work with no date. Low: a barrier not yet assessed or not yet tested. Each gap carries its severity. Pass risk_id for one risk, kind for one sort of gap, severity (high, medium or low) for one rank, and limit and offset to page through the list. Retired risks have none.",
       "args": [
         {
           "from": "query",

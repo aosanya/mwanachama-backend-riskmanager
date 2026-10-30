@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type Standing string
 
 const (
@@ -9,11 +11,22 @@ const (
 	StandingFailing  Standing = "failing"
 )
 
-func (p Placed) Verdict() Standing {
+func (p Placed) Stale(now time.Time) bool {
+	if p.Barrier.RetestDays <= 0 || p.Latest == nil {
+		return false
+	}
+	recorded, err := time.Parse(time.RFC3339, p.Latest.RecordedAt)
+	if err != nil {
+		return false
+	}
+	return recorded.AddDate(0, 0, p.Barrier.RetestDays).Before(now)
+}
+
+func (p Placed) Verdict(now time.Time) Standing {
 	switch {
 	case p.Latest != nil && p.Latest.Outcome != OutcomePass:
 		return StandingFailing
-	case p.EvidenceCount == 0:
+	case p.EvidenceCount == 0, p.Stale(now):
 		return StandingUnproven
 	case p.Barrier.Design != JudgementAdequate || p.Barrier.Coverage != JudgementAdequate:
 		return StandingWeak

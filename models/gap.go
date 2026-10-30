@@ -19,6 +19,7 @@ const (
 	GapBarrierUnassessed GapKind = "barrier_unassessed"
 	GapBarrierUntested   GapKind = "barrier_untested"
 	GapBarrierFailing    GapKind = "barrier_failing"
+	GapBarrierStale      GapKind = "barrier_stale"
 	GapControlUnowned    GapKind = "control_unowned"
 	GapActionUndated     GapKind = "action_undated"
 	GapActionOverdue     GapKind = "action_overdue"
@@ -49,7 +50,7 @@ func (k GapKind) Severity() Severity {
 	switch k {
 	case GapPathwayUnguarded, GapBarrierFailing, GapActionOverdue:
 		return SeverityHigh
-	case GapRiskUnowned, GapRiskOneSided, GapRiskUnrated, GapControlUnowned, GapActionUndated, GapBarrierDesign, GapBarrierCoverage:
+	case GapRiskUnowned, GapRiskOneSided, GapRiskUnrated, GapControlUnowned, GapActionUndated, GapBarrierDesign, GapBarrierCoverage, GapBarrierStale:
 		return SeverityMedium
 	case GapBarrierUnassessed, GapBarrierUntested:
 		return SeverityLow
@@ -78,7 +79,7 @@ func (b Bowtie) Gaps(now time.Time) []Gap {
 	out := b.riskGaps()
 	owned := map[string]bool{}
 	for _, arm := range append(append([]Arm{}, b.Threats...), b.Consequences...) {
-		out = append(out, b.armGaps(arm, owned)...)
+		out = append(out, b.armGaps(arm, owned, now)...)
 	}
 	out = append(out, b.actionGaps(now)...)
 	RankGaps(out)
@@ -109,13 +110,13 @@ func (b Bowtie) riskGaps() []Gap {
 	return out
 }
 
-func (b Bowtie) armGaps(arm Arm, ownedControls map[string]bool) []Gap {
+func (b Bowtie) armGaps(arm Arm, ownedControls map[string]bool, now time.Time) []Gap {
 	var out []Gap
 	if len(arm.Barriers) == 0 {
 		out = append(out, b.gap(GapPathwayUnguarded, "pathway", arm.Pathway.ID, "nothing stands on the %s %q", arm.Pathway.Side, arm.Pathway.Title))
 	}
 	for _, p := range arm.Barriers {
-		out = append(out, b.barrierGaps(arm.Pathway, p)...)
+		out = append(out, b.barrierGaps(arm.Pathway, p, now)...)
 		if p.Control.Owner == "" && !ownedControls[p.Control.ID] {
 			ownedControls[p.Control.ID] = true
 			out = append(out, b.gap(GapControlUnowned, "control", p.Control.ID, "nobody operates the control %q", p.Control.Name))
@@ -124,7 +125,7 @@ func (b Bowtie) armGaps(arm Arm, ownedControls map[string]bool) []Gap {
 	return out
 }
 
-func (b Bowtie) barrierGaps(pathway Pathway, p Placed) []Gap {
+func (b Bowtie) barrierGaps(pathway Pathway, p Placed, now time.Time) []Gap {
 	var out []Gap
 	where := fmt.Sprintf("%q on the %s %q", p.Control.Name, pathway.Side, pathway.Title)
 	if found(p.Barrier.Design) {
@@ -138,6 +139,9 @@ func (b Bowtie) barrierGaps(pathway Pathway, p Placed) []Gap {
 	}
 	if !p.Barrier.Maturity.NeedsEvidence() {
 		out = append(out, b.gap(GapBarrierUntested, "barrier", p.Barrier.ID, "%s has got no further than %s, with %d piece(s) of evidence", where, p.Barrier.Maturity, p.EvidenceCount))
+	}
+	if p.Stale(now) {
+		out = append(out, b.gap(GapBarrierStale, "barrier", p.Barrier.ID, "the latest evidence for %s was recorded %s, more than the %d day(s) it stays current", where, p.Latest.RecordedAt, p.Barrier.RetestDays))
 	}
 	if p.Latest != nil && p.Latest.Outcome != OutcomePass {
 		out = append(out, b.gap(GapBarrierFailing, "barrier", p.Barrier.ID, "the latest evidence for %s was a %s: %s", where, p.Latest.Outcome, p.Latest.Summary))

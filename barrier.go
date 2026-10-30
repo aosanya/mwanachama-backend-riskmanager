@@ -20,6 +20,9 @@ func (m *riskManager) PlaceBarrier(ctx context.Context, b Barrier) (Barrier, err
 	if err := m.checks(roleBarrier, b); err != nil {
 		return Barrier{}, err
 	}
+	if err := retestWindowIsNotNegative(b); err != nil {
+		return Barrier{}, err
+	}
 	if b.Maturity.NeedsEvidence() {
 		return Barrier{}, fmt.Errorf("%w: a barrier cannot be placed as %s, because no evidence can exist yet", ErrInvalid, b.Maturity)
 	}
@@ -87,6 +90,9 @@ func (m *riskManager) UpdateBarrier(ctx context.Context, change BarrierChange) (
 	if err := m.checks(roleBarrier, held); err != nil {
 		return Barrier{}, err
 	}
+	if err := retestWindowIsNotNegative(held); err != nil {
+		return Barrier{}, err
+	}
 	if err := m.maturityHasEvidence(ctx, held); err != nil {
 		return Barrier{}, err
 	}
@@ -109,9 +115,19 @@ func applyBarrierChange(held *Barrier, change BarrierChange) {
 	if change.Maturity != nil {
 		held.Maturity = *change.Maturity
 	}
+	if change.RetestDays != nil {
+		held.RetestDays = *change.RetestDays
+	}
 	if change.Notes != nil {
 		held.Notes = *change.Notes
 	}
+}
+
+func retestWindowIsNotNegative(b Barrier) error {
+	if b.RetestDays < 0 {
+		return fmt.Errorf("%w: barrier.retest_days is %d, which is below zero", ErrInvalid, b.RetestDays)
+	}
+	return nil
 }
 
 func (m *riskManager) maturityHasEvidence(ctx context.Context, b Barrier) error {

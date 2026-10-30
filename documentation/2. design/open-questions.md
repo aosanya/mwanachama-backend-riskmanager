@@ -16,6 +16,10 @@ critical risks retested more often. A per-barrier column is the simplest and
 the easiest to leave unset; a window in the mount's settings needs the
 settings mechanism `spec` already has.
 
+Built as the smallest option, pending the owner: a per-barrier `retest_days`,
+zero meaning no window. A mount-wide default or a per-control window is still
+open; the barrier column is the one every other choice would sit on top of.
+
 ## 2. Can a domain supply its own scales?
 
 Likelihood and impact are 1 to 5, and the bands are fixed at low 1–4, medium

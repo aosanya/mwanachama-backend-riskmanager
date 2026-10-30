@@ -141,7 +141,7 @@ func (m *riskManager) asmMeasures(ctx context.Context, placed []models.Placed, p
 			RiskTitle: risks[pathway.RiskID].Title,
 			Pathway:   pathway,
 			Placed:    p,
-			Standing:  p.Verdict(),
+			Standing:  p.Verdict(m.clock()),
 		})
 	}
 	slices.SortStableFunc(out, func(a, b Measure) int {

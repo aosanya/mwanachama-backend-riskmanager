@@ -268,6 +268,12 @@
           ]
         },
         {
+          "name": "retest_days",
+          "type": "int",
+          "description": "How many days its latest evidence stays current. Once the latest evidence is older than this the barrier is stale: it is reported as a gap and its standing is no better than unproven. Zero means no window, so the evidence never goes stale.",
+          "default": "0"
+        },
+        {
           "name": "notes",
           "type": "text",
           "description": "What is missing or weak about this barrier, and why it was rated as it was."

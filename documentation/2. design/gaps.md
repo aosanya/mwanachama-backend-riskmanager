@@ -24,7 +24,7 @@ included. A retired risk has no gaps: it is frozen.
 
 ## The kinds
 
-Twelve kinds, each with a severity.
+Thirteen kinds, each with a severity.
 
 | Kind | Severity | Subject | Fires when |
 |---|---|---|---|
@@ -38,6 +38,7 @@ Twelve kinds, each with a severity.
 | `action_undated` | medium | action | An open or in-progress action has no due date. |
 | `barrier_design` | medium | barrier | The barrier's `design` has been judged `partial` or `inadequate`. A design not yet judged is `barrier_unassessed`, not this. |
 | `barrier_coverage` | medium | barrier | The barrier's `coverage` has been judged `partial` or `inadequate`. A coverage not yet judged is `barrier_unassessed`, not this. |
+| `barrier_stale` | medium | barrier | The barrier has a `retest_days` window above zero and its latest evidence was recorded longer ago than that, whatever the outcome. A window of zero never goes stale, and a barrier with no evidence is `barrier_untested`, not this. A fresh piece of evidence clears it. |
 | `barrier_unassessed` | low | barrier | The barrier's `design`, its `coverage` or both are still `unassessed`. One gap per barrier, and its message names which of the two. |
 | `barrier_untested` | low | barrier | Its `maturity` is below `tested` — `proposed`, `designed` or `deployed`. The message gives the evidence count, so "deployed, with two configuration checks" reads differently from "proposed, with none". |
 
@@ -54,7 +55,7 @@ flagged as unevidenced: a barrier cannot reach `tested` with none, so
 | Severity | Kinds | What it says |
 |---|---|---|
 | `high` | `pathway_unguarded`, `barrier_failing`, `action_overdue` | A route is open, a barrier is known not to work, or a commitment has been missed. Someone should act now. |
-| `medium` | `risk_unowned`, `risk_one_sided`, `risk_unrated`, `control_unowned`, `action_undated`, `barrier_design`, `barrier_coverage` | The register is incomplete, or a barrier was judged short of adequate. A finding to schedule. |
+| `medium` | `risk_unowned`, `risk_one_sided`, `risk_unrated`, `control_unowned`, `action_undated`, `barrier_design`, `barrier_coverage`, `barrier_stale` | The register is incomplete, or a barrier was judged short of adequate. A finding to schedule. |
 | `low` | `barrier_unassessed`, `barrier_untested` | Nothing is known yet: a barrier placed and not yet judged or tried. Expected of a register still being drawn, so it comes last and is not an alarm. |
 
 The mapping is `GapKind.Severity()` in `models/gap.go`. A kind the module
@@ -120,7 +121,9 @@ returns 53 gaps: 10 high (nine unguarded threats and the one failing barrier),
 ## Standing is not a gap
 
 A measure's `standing` — `proven`, `weak`, `unproven`, `failing` — is the
-per-barrier answer used by the measure questions. Gaps are the per-register
+per-barrier answer used by the measure questions. A stale barrier is `unproven`
+at best: a latest failure stays `failing`, and anything else drops to
+`unproven`. Gaps are the per-register
 answer. They draw on the same facts but are separate on purpose: the
 standing ignores maturity, and the gaps include owners, ratings and work.
 
