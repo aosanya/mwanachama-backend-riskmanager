@@ -1,0 +1,108 @@
+{
+  "library": "ai_safety",
+  "note": "Taken from the owner's enterprise AI safety bow-tie conversation (documentation/1. requirements/sources.md). The consequences were only drawn in an image the page text does not carry, so this file ships none. A control is placed on a pathway in the order the conversation listed it, preventive barriers first and then detection and containment; the conversation had no rows for logging and observability or for cross-tenant and session leakage, so those two pathways have no controls. The sub-bow-tie for retrieval names threats and no controls, because the conversation named none.",
+  "risk": {
+    "title": "Loss of control over sensitive enterprise data through AI",
+    "top_event": "Sensitive information is disclosed, made accessible, or transmitted to an unauthorized party or system through an AI application, model, agent, or connected service.",
+    "hazard": "Sensitive enterprise data"
+  },
+  "pathways": [
+    {
+      "title": "Prompt input leakage",
+      "scenario": "Employee pastes customer records, source code, or strategy documents into an unapproved AI service.",
+      "side": "threat",
+      "controls": [
+        { "name": "approved AI gateway", "stage": "preventive" },
+        { "name": "data classification", "stage": "preventive" },
+        { "name": "input DLP", "stage": "preventive" },
+        { "name": "prompt monitoring", "stage": "containment" }
+      ]
+    },
+    {
+      "title": "RAG / retrieval leakage",
+      "scenario": "An AI assistant retrieves documents the requesting user should not be permitted to see.",
+      "side": "threat",
+      "controls": [
+        { "name": "document-level authorisation", "stage": "preventive" },
+        { "name": "permission-aware retrieval", "stage": "preventive" },
+        { "name": "tenant isolation", "stage": "preventive" },
+        { "name": "retrieval audit trails", "stage": "containment" }
+      ]
+    },
+    {
+      "title": "Prompt injection",
+      "scenario": "A malicious document or webpage instructs an AI agent to send confidential data to an external destination.",
+      "side": "threat",
+      "controls": [
+        { "name": "treat retrieved content as untrusted", "stage": "preventive" },
+        { "name": "tool authorisation", "stage": "preventive" },
+        { "name": "restricted network egress", "stage": "preventive" },
+        { "name": "suspicious tool-call detection", "stage": "containment" }
+      ]
+    },
+    {
+      "title": "Agent/tool misuse",
+      "scenario": "An AI agent with excessive permissions sends sensitive data via email, API, or external tools.",
+      "side": "threat",
+      "controls": [
+        { "name": "least-privilege tools", "stage": "preventive" },
+        { "name": "approval gates", "stage": "preventive" },
+        { "name": "destination allowlists", "stage": "preventive" },
+        { "name": "scoped credentials", "stage": "preventive" },
+        { "name": "tool-call logging", "stage": "containment" },
+        { "name": "agent kill switch", "stage": "containment" },
+        { "name": "token revocation", "stage": "containment" }
+      ]
+    },
+    {
+      "title": "Model output leakage",
+      "scenario": "An AI system reveals confidential information through its responses, including memorized training data.",
+      "side": "threat",
+      "controls": [
+        { "name": "output DLP", "stage": "preventive" }
+      ]
+    },
+    {
+      "title": "Provider and integration leakage",
+      "scenario": "Data is exposed through third-party processing, logging, retention, or an insecure connector.",
+      "side": "threat",
+      "controls": [
+        { "name": "vendor due diligence", "stage": "preventive" },
+        { "name": "contractual controls", "stage": "preventive" },
+        { "name": "retention limits", "stage": "preventive" },
+        { "name": "encryption", "stage": "preventive" },
+        { "name": "vendor incident escalation", "stage": "containment" },
+        { "name": "integration disablement", "stage": "containment" }
+      ]
+    },
+    {
+      "title": "Logging and observability leakage",
+      "scenario": "Sensitive prompts, responses, or retrieved content are exposed in telemetry or debugging systems.",
+      "side": "threat",
+      "controls": []
+    },
+    {
+      "title": "Cross-tenant / session leakage",
+      "scenario": "A configuration or isolation failure makes one user's information accessible to another.",
+      "side": "threat",
+      "controls": []
+    }
+  ],
+  "drilldowns": [
+    {
+      "pathway": "RAG / retrieval leakage",
+      "risk": {
+        "title": "An enterprise AI assistant discloses restricted information to an unauthorized user",
+        "top_event": "An enterprise AI assistant discloses restricted information to an unauthorized user."
+      },
+      "pathways": [
+        { "title": "Inherited document permissions", "side": "threat", "controls": [] },
+        { "title": "Stale access-control lists", "side": "threat", "controls": [] },
+        { "title": "Overly broad retrieval", "side": "threat", "controls": [] },
+        { "title": "Cross-user memory", "side": "threat", "controls": [] },
+        { "title": "Prompt injection through a retrieved page", "side": "threat", "controls": [] },
+        { "title": "Insecure connectors", "side": "threat", "controls": [] }
+      ]
+    }
+  ]
+}
