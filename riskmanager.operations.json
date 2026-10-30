@@ -31,6 +31,7 @@
         {
           "from": "path",
           "as": "riskID",
+          "refers": "riskmanager.risk",
           "description": "The risk to read."
         }
       ],
@@ -74,6 +75,7 @@
         {
           "from": "path",
           "as": "riskID",
+          "refers": "riskmanager.risk",
           "into": "ID",
           "description": "The risk to update. The address decides, not the body."
         }
@@ -95,6 +97,7 @@
         {
           "from": "path",
           "as": "riskID",
+          "refers": "riskmanager.risk",
           "description": "The risk to move."
         },
         {
@@ -141,6 +144,7 @@
         {
           "from": "path",
           "as": "pathwayID",
+          "refers": "riskmanager.pathway",
           "description": "The pathway to read."
         }
       ],
@@ -165,6 +169,7 @@
         {
           "from": "path",
           "as": "pathwayID",
+          "refers": "riskmanager.pathway",
           "into": "ID",
           "description": "The pathway to update. The address decides, not the body."
         }
@@ -187,6 +192,7 @@
         {
           "from": "path",
           "as": "pathwayID",
+          "refers": "riskmanager.pathway",
           "description": "The pathway to delete."
         }
       ],
@@ -227,6 +233,7 @@
         {
           "from": "path",
           "as": "controlID",
+          "refers": "riskmanager.control",
           "description": "The control to read."
         }
       ],
@@ -270,6 +277,7 @@
         {
           "from": "path",
           "as": "controlID",
+          "refers": "riskmanager.control",
           "into": "ID",
           "description": "The control to update. The address decides, not the body."
         }
@@ -334,6 +342,7 @@
         {
           "from": "path",
           "as": "barrierID",
+          "refers": "riskmanager.barrier",
           "into": "ID",
           "description": "The barrier to change. The address decides, not the body."
         }
@@ -356,6 +365,7 @@
         {
           "from": "path",
           "as": "barrierID",
+          "refers": "riskmanager.barrier",
           "description": "The barrier to remove."
         }
       ],
@@ -509,6 +519,7 @@
         {
           "from": "path",
           "as": "actionID",
+          "refers": "riskmanager.action",
           "into": "ID",
           "description": "The action to update. The address decides, not the body."
         }
@@ -530,6 +541,7 @@
         {
           "from": "path",
           "as": "actionID",
+          "refers": "riskmanager.action",
           "description": "The action to move."
         },
         {
@@ -632,6 +644,7 @@
         {
           "from": "path",
           "as": "controlID",
+          "refers": "riskmanager.control",
           "description": "The control to trace."
         }
       ],
@@ -652,6 +665,7 @@
         {
           "from": "path",
           "as": "riskID",
+          "refers": "riskmanager.risk",
           "description": "The risk to draw."
         }
       ],
