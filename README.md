@@ -21,7 +21,8 @@ Beside them it ships [`riskmanager.wakala.json`](riskmanager.wakala.json), the
 default domain a mounting host uses, with each role under its own name. A host
 calls `riskmanager.SpecFor(instance)` (or `SpecForMount(instance, mount)`),
 then `Provision` and `NewRiskManager`, as it does for `engage` and `voting`.
-Nothing mounts the module yet.
+`mwanachama-wakala-api` mounts it per agency as the `risks` mount, over REST
+under `/instances/{instanceID}/risks` and as `riskmanager_*` MCP tools.
 
 ## The five questions
 

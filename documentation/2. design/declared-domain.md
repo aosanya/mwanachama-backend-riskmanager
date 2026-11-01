@@ -174,6 +174,8 @@ spec along with the examples, and
 object per role, each named for its role, with no domain word in a name or a
 table.
 
-Nothing mounts the module yet. Registering it in `mwanachama-wakala-api` is
-RM1 on [todo.md](../3.%20implementation/todo.md); it changes that repo's
-registry and route table, so it waits for the owner.
+`mwanachama-wakala-api` mounts the module per agency as the `risks` mount
+(commit 8a61265, 2026-10-31): it registers a manager over `SpecForMount` and
+`Provision`, serves every operation in `riskmanager.operations.json` under
+`/instances/{instanceID}/risks`, and exposes the same operations as
+`riskmanager_*` MCP tools.

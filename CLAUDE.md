@@ -53,10 +53,10 @@ and `developer/documentation/2. design/architecture-spec-driven-modules.md`.
   adds no vocabulary. It is embedded and reached through
   `SpecFor(instance)` and `SpecForMount(instance, mount)`, which stamp the
   host's instance (and mount) into it and validate the result; the host then
-  calls `Provision(db, s)` and `NewRiskManager(db, s)`. **Nothing in
-  `mwanachama-wakala-api` is wired yet.** Mounting is row RM1: it changes a
-  sibling repo's registry and route table, so it waits for the owner. An
-  instance or mount name carries no underscore — the engine refuses one.
+  calls `Provision(db, s)` and `NewRiskManager(db, s)`.
+  `mwanachama-wakala-api` does exactly that for its `risks` mount (its
+  `3. implementation/risk-manager-mount.md`). An instance or mount name
+  carries no underscore — the engine refuses one.
 
 **A domain names objects; it does not re-declare them.** Its spec supplies
 `instance`, the name and table each role lands in, its own indexes, and a
@@ -205,15 +205,14 @@ not part of `go test ./...`). Routes also carry
   an action here is a commitment attached to a gap, with an owner and a due
   date, not a task tracker.
 
-## Status (2026-10-26)
+## Status (2026-11-01)
 
 New repo, built 2026-10-26, and mount-ready the same day: it ships
 `riskmanager.wakala.json` with `SpecFor` and `SpecForMount`, and
 `mount_test.go` holds the contract a host relies on (two mounts and two
 instances in one database keep separate tables, and a manager over each
-reads only its own rows). Nothing mounts it yet: no wakala-api wiring (RM1,
-which changes a sibling repo and waits for the owner), no studio or app
-screen. Open work is on
+reads only its own rows). `mwanachama-wakala-api` mounts it per agency (commit
+8a61265, 2026-10-31); there is no studio or app screen yet. Open work is on
 [documentation/3. implementation/todo.md](documentation/3.%20implementation/todo.md).
 
 ## Conventions

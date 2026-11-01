@@ -23,6 +23,6 @@ Four folders, in SDLC order, and everything lives under one of them.
 A standalone risk register built on the bow-tie: a centre event, its
 threats and consequences, the measures standing on each route, and the
 evidence that the measures work. No tie to Mwanachama's tier/member/campaign
-model, and not mounted anywhere yet. See [CLAUDE.md](../CLAUDE.md) for the
+model, and mounted per agency in `mwanachama-wakala-api`. See [CLAUDE.md](../CLAUDE.md) for the
 invariants and [2. design/bowtie-model.md](2.%20design/bowtie-model.md) for
 the model.
