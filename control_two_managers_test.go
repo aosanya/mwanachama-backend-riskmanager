@@ -22,7 +22,7 @@ type twoManagers struct {
 
 func twinSpellings(t *testing.T) (composed, decomposed string) {
 	t.Helper()
-	composed, decomposed = "Hálózati tűzfal", "Hálózati tűzfal"
+	composed, decomposed = "H\u00e1l\u00f3zati t\u0171zfal", "Ha\u0301lo\u0301zati tu\u030bzfal"
 	if composed == decomposed || !plaintext.SameName(composed, decomposed) {
 		t.Fatalf("%q and %q are not a composed and decomposed twin", composed, decomposed)
 	}
@@ -52,7 +52,7 @@ func twoManagersOnOneFile(t *testing.T) twoManagers {
 	return twoManagers{first: first, second: second, firstDB: firstDB, secondDB: secondDB, controlsTable: s.TableFor(controls)}
 }
 
-func (p twoManagers) beforeFirstInsert(t *testing.T, other func(ctx context.Context) error) {
+func (p twoManagers) beforeFirstWrite(t *testing.T, write string, other func(ctx context.Context) error) {
 	t.Helper()
 	var fired atomic.Bool
 	hook := func(tx *gorm.DB) {
@@ -63,7 +63,15 @@ func (p twoManagers) beforeFirstInsert(t *testing.T, other func(ctx context.Cont
 			t.Errorf("the other manager's write: %v", err)
 		}
 	}
-	if err := p.firstDB.Callback().Create().Before("gorm:begin_transaction").Register("rm:other-manager-first", hook); err != nil {
+	callbacks := p.firstDB.Callback()
+	var err error
+	switch write {
+	case "update":
+		err = callbacks.Update().Before("gorm:begin_transaction").Register("rm:other-manager-first", hook)
+	default:
+		err = callbacks.Create().Before("gorm:begin_transaction").Register("rm:other-manager-first", hook)
+	}
+	if err != nil {
 		t.Fatal(err)
 	}
 }
@@ -107,7 +115,7 @@ func TestControlCreate_ATwinStoredByAnotherManagerBetweenTheCheckAndTheInsertIsA
 	composed, decomposed := twinSpellings(t)
 	ctx := context.Background()
 	p := twoManagersOnOneFile(t)
-	p.beforeFirstInsert(t, func(ctx context.Context) error {
+	p.beforeFirstWrite(t, "create", func(ctx context.Context) error {
 		_, err := p.second.CreateControl(ctx, rm.Control{Name: decomposed})
 		return err
 	})
@@ -127,18 +135,10 @@ func TestControlUpdate_ATwinStoredByAnotherManagerBetweenTheCheckAndTheWriteIsAC
 	if err != nil {
 		t.Fatal(err)
 	}
-	var fired atomic.Bool
-	hook := func(tx *gorm.DB) {
-		if tx.Statement.Table != p.controlsTable || !fired.CompareAndSwap(false, true) {
-			return
-		}
-		if _, err := p.second.CreateControl(tx.Statement.Context, rm.Control{Name: decomposed}); err != nil {
-			t.Errorf("the other manager's write: %v", err)
-		}
-	}
-	if err := p.firstDB.Callback().Update().Before("gorm:begin_transaction").Register("rm:other-manager-first-update", hook); err != nil {
-		t.Fatal(err)
-	}
+	p.beforeFirstWrite(t, "update", func(ctx context.Context) error {
+		_, err := p.second.CreateControl(ctx, rm.Control{Name: decomposed})
+		return err
+	})
 	mine.Name = composed
 	if _, err := p.first.UpdateControl(ctx, mine); !errors.Is(err, rm.ErrConflict) {
 		t.Fatalf("rename after the twin was stored elsewhere = %v, want a conflict", err)

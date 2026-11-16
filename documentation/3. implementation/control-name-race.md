@@ -41,6 +41,12 @@ The lookup compares the new owner with the owner the control held at the first r
 
 `control_two_managers_test.go` uses two managers on two connections of one WAL file. It races a composed and a decomposed spelling over thirty-six rounds, and it holds the race still: a create hook on the first connection lets the second manager store the twin after the first one passed its check and before its write, for a create and for a rename. Each must answer the conflict and leave one control. `control_name_key_test.go` builds the old `controls` table by hand and checks the backfill, a second `Provision` changing nothing, and the folded comparison. The twin pair is spelled with escapes and a guard test checks that the two spellings differ in bytes and are one name.
 
+`control_unique_violation_test.go` is what reaches `nameTaken` (hub issue RM12). Before it, the three tests of `control_concurrent_test.go` ran one manager, so the lock settled every race and the mapping was never reached: with its two calls removed they all still passed. The new tests use two managers on one WAL file and hold the race still with a create hook on the first connection, so the second manager stores the exact name after the first one's check and before its write, once for a create and once for a rename. Each must answer a conflict naming the control. A third test races one exact name over the two managers for thirty-six rounds, and a fourth races the twin pair from one manager on a file and on shared memory. With the two `nameTaken` calls replaced by the bare error, six of these tests fail, the losers answering the raw `UNIQUE constraint failed` text instead of the conflict.
+
+## The MUN706 commits
+
+The first red commit of MUN706 (`4d63a10`) spelled its twin test with `Hálózati tűzfal` and `Hálózáti tűzfal`, which differ in letters and are not twins, and the spelling was corrected inside the fix commit `7091aaf`, so that pair is not a tests-only red. The commits are left as they are. A reviewer ran the corrected test on the `4d63a10` code and it failed with two winners in seven of twelve rounds, so the claim held. Since RM12 the twin pair lives in one helper, `twinSpellings`, written with escapes, and `TestControlTwinSpellings_AreDifferentBytesAndOneName` fails when the two strings are equal or are not one name under `plaintext.SameName`.
+
 ## Hub copy
 
 The hub copy in `projects/hub-steward/code/wakala-api/modules/riskmanager` needs the same change until ISS-105 deletes it. `scripts/hub-copy-diff.sh` shows the difference.
