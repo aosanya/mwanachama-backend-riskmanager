@@ -72,7 +72,7 @@ func (m *riskManager) ListBarriers(ctx context.Context, filter BarrierFilter) ([
 	if filter.ControlID != "" {
 		q = q.Where("control_id = ?", filter.ControlID)
 	}
-	return listOf[Barrier](m, q.Order("position").Order("created_at").Limit(capped(filter.Limit)), roleBarrier)
+	return listOf[Barrier](m, q.Order("position").Order("created_at").Limit(pageOf(ctx, filter.Limit)), roleBarrier)
 }
 
 func (m *riskManager) UpdateBarrier(ctx context.Context, change BarrierChange) (Barrier, error) {

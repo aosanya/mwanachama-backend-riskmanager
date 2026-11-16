@@ -41,5 +41,5 @@ func (m *riskManager) ListAssessments(ctx context.Context, filter AssessmentFilt
 	if filter.Kind != "" {
 		q = q.Where("kind = ?", string(filter.Kind))
 	}
-	return listOf[Assessment](m, q.Order("assessed_at").Order("created_at").Limit(capped(filter.Limit)), roleAssessment)
+	return listOf[Assessment](m, q.Order("assessed_at").Order("created_at").Limit(pageOf(ctx, filter.Limit)), roleAssessment)
 }

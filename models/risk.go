@@ -19,4 +19,5 @@ type RiskFilter struct {
 	ParentPathwayID string `json:"parent_pathway_id" query:"parent_pathway_id"`
 	Query           string `json:"query" query:"query"`
 	Limit           int    `json:"limit" query:"limit"`
+	Offset          int    `json:"offset" query:"offset"`
 }

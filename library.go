@@ -135,7 +135,7 @@ func (i *libraryImport) bowtie(ctx context.Context, r LibraryRisk, parentPathway
 	if err != nil {
 		return nil, err
 	}
-	held, err := i.rm.Threats(ctx, PathwayFilter{RiskID: risk.ID, Limit: DefaultPage * 100})
+	held, err := i.rm.Threats(everything(ctx), PathwayFilter{RiskID: risk.ID, Limit: DefaultPage * 100})
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func (i *libraryImport) bowtie(ctx context.Context, r LibraryRisk, parentPathway
 	for _, h := range held {
 		have[h.Title] = h.Pathway
 	}
-	consequences, err := i.rm.Consequences(ctx, PathwayFilter{RiskID: risk.ID, Limit: DefaultPage * 100})
+	consequences, err := i.rm.Consequences(everything(ctx), PathwayFilter{RiskID: risk.ID, Limit: DefaultPage * 100})
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func (i *libraryImport) bowtie(ctx context.Context, r LibraryRisk, parentPathway
 }
 
 func (i *libraryImport) risk(ctx context.Context, r LibraryRisk, parentPathwayID string) (Risk, error) {
-	held, err := i.rm.ListRisks(ctx, RiskFilter{Query: r.Title, ParentPathwayID: parentPathwayID, Limit: DefaultPage * 100})
+	held, err := i.rm.ListRisks(everything(ctx), RiskFilter{Query: r.Title, ParentPathwayID: parentPathwayID, Limit: DefaultPage * 100})
 	if err != nil {
 		return Risk{}, err
 	}
@@ -193,7 +193,7 @@ func (i *libraryImport) stand(ctx context.Context, pathway Pathway, controls []L
 	if len(controls) == 0 {
 		return nil
 	}
-	stands, err := i.rm.ListBarriers(ctx, BarrierFilter{PathwayID: pathway.ID, Limit: DefaultPage * 100})
+	stands, err := i.rm.ListBarriers(everything(ctx), BarrierFilter{PathwayID: pathway.ID, Limit: DefaultPage * 100})
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func (i *libraryImport) stand(ctx context.Context, pathway Pathway, controls []L
 	for _, b := range stands {
 		standing[b.ControlID] = true
 	}
-	known, err := i.rm.ListControls(ctx, ControlFilter{Limit: DefaultPage * 100})
+	known, err := i.rm.ListControls(everything(ctx), ControlFilter{Limit: DefaultPage * 100})
 	if err != nil {
 		return err
 	}

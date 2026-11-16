@@ -36,7 +36,14 @@ func TestEveryRiskIsReviewedHoweverManyThereAre(t *testing.T) {
 	for i := range risks {
 		seedRisk(t, rm, ctx, fmt.Sprintf("risk %d", i))
 	}
-	got := seedGapsOf(t, rm, ctx, riskmanager.GapFilter{Limit: everything})
+	var got []riskmanager.Gap
+	for {
+		page := seedGapsOf(t, rm, ctx, riskmanager.GapFilter{Limit: riskmanager.MaxPage, Offset: len(got)})
+		if len(page) == 0 {
+			break
+		}
+		got = append(got, page...)
+	}
 	if want := risks * 4; len(got) != want {
 		t.Fatalf("%d risks with no threats, consequences or ratings gave %d gaps, want %d", risks, len(got), want)
 	}

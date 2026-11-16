@@ -58,7 +58,7 @@ func (m *riskManager) ListControls(ctx context.Context, filter ControlFilter) ([
 	if filter.Owner != "" {
 		q = q.Where("owner = ?", filter.Owner)
 	}
-	return listOf[Control](m, q.Order("name").Limit(capped(filter.Limit)), roleControl)
+	return listOf[Control](m, q.Order("name").Limit(pageOf(ctx, filter.Limit)), roleControl)
 }
 
 func (m *riskManager) UpdateControl(ctx context.Context, c Control) (Control, error) {
@@ -112,7 +112,7 @@ func (m *riskManager) failingControls(ctx context.Context, filter ControlFilter)
 		q = q.Where("c.owner = ?", filter.Owner)
 	}
 	var counts []failingCount
-	if err := q.Group("b.control_id, c.name").Order("failing DESC").Order("c.name").Limit(capped(filter.Limit)).Scan(&counts).Error; err != nil {
+	if err := q.Group("b.control_id, c.name").Order("failing DESC").Order("c.name").Limit(pageOf(ctx, filter.Limit)).Scan(&counts).Error; err != nil {
 		return nil, err
 	}
 	out := make([]Control, 0, len(counts))

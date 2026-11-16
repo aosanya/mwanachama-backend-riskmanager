@@ -42,5 +42,5 @@ func (m *riskManager) ListEvidence(ctx context.Context, filter EvidenceFilter) (
 	if isRFC3339(filter.To) {
 		q = q.Where("recorded_at <= ?", filter.To)
 	}
-	return listOf[Evidence](m, q.Order("recorded_at").Order("created_at").Limit(capped(filter.Limit)), roleEvidence)
+	return listOf[Evidence](m, q.Order("recorded_at").Order("created_at").Limit(pageOf(ctx, filter.Limit)), roleEvidence)
 }

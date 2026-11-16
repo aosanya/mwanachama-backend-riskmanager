@@ -82,7 +82,7 @@ func (m *riskManager) ListActions(ctx context.Context, filter ActionFilter) ([]A
 	if filter.Status != "" {
 		q = q.Where("status = ?", string(filter.Status))
 	}
-	return listOf[Action](m, q.Order("created_at").Limit(capped(filter.Limit)), roleAction)
+	return listOf[Action](m, q.Order("created_at").Limit(pageOf(ctx, filter.Limit)), roleAction)
 }
 
 func (m *riskManager) UpdateAction(ctx context.Context, a Action) (Action, error) {

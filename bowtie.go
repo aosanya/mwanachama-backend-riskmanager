@@ -35,7 +35,7 @@ func (m *riskManager) Bowtie(ctx context.Context, riskID string) (models.Bowtie,
 	if err := m.rateInto(ctx, &out); err != nil {
 		return models.Bowtie{}, err
 	}
-	actions, err := m.ListActions(ctx, ActionFilter{RiskID: riskID, Limit: asmEverything})
+	actions, err := m.ListActions(everything(ctx), ActionFilter{RiskID: riskID, Limit: asmEverything})
 	if err != nil {
 		return models.Bowtie{}, err
 	}
@@ -86,7 +86,7 @@ func (m *riskManager) armsOf(ctx context.Context, pathways []Pathway, pathwayIDs
 }
 
 func (m *riskManager) rateInto(ctx context.Context, b *models.Bowtie) error {
-	held, err := m.ListAssessments(ctx, AssessmentFilter{RiskID: b.Risk.ID, Limit: asmEverything})
+	held, err := m.ListAssessments(everything(ctx), AssessmentFilter{RiskID: b.Risk.ID, Limit: asmEverything})
 	if err != nil {
 		return err
 	}

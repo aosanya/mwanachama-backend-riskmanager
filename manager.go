@@ -18,6 +18,8 @@ import (
 
 const DefaultPage = 200
 
+const MaxPage = 500
+
 const stampLayout = "2006-01-02T15:04:05.000000Z07:00"
 
 type RiskManager interface {
@@ -151,11 +153,24 @@ func (m *riskManager) remove(ctx context.Context, role, id string) error {
 	return m.q(ctx, role).Where("id = ?", id).Delete(nil).Error
 }
 
+type uncappedPages struct{}
+
+func everything(ctx context.Context) context.Context {
+	return context.WithValue(ctx, uncappedPages{}, true)
+}
+
 func capped(limit int) int {
 	if limit <= 0 {
 		return DefaultPage
 	}
-	return limit
+	return min(limit, MaxPage)
+}
+
+func pageOf(ctx context.Context, limit int) int {
+	if limit > 0 && ctx.Value(uncappedPages{}) != nil {
+		return limit
+	}
+	return capped(limit)
 }
 
 func containing(q *gorm.DB, term string, columns ...string) *gorm.DB {

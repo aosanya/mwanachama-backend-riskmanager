@@ -47,7 +47,7 @@
       "call": "ListRisks",
       "action": "riskmanager.risk.list",
       "title": "List risks",
-      "description": "List the risks in the register, oldest first. Narrow by status, owner or the pathway a risk drills into, and search by words with query, which matches the title, the top event and the hazard without regard to case. Empty filters match everything.",
+      "description": "List the risks in the register, oldest first. Narrow by status, owner or the pathway a risk drills into, and search by words with query, which matches the title, the top event and the hazard without regard to case. Empty filters match everything. Page with limit (200 when left out, 500 at most) and offset.",
       "args": [
         {
           "from": "query",

@@ -57,7 +57,7 @@ func (m *riskManager) ListRisks(ctx context.Context, filter RiskFilter) ([]Risk,
 		q = q.Where("parent_pathway_id = ?", filter.ParentPathwayID)
 	}
 	q = containing(q, filter.Query, "title", "top_event", "hazard")
-	return listOf[Risk](m, q.Order("created_at").Limit(capped(filter.Limit)), roleRisk)
+	return listOf[Risk](m, q.Order("created_at").Order("id").Limit(pageOf(ctx, filter.Limit)).Offset(max(filter.Offset, 0)), roleRisk)
 }
 
 func (m *riskManager) UpdateRisk(ctx context.Context, r Risk) (Risk, error) {

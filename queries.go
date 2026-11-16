@@ -26,7 +26,7 @@ func (m *riskManager) summarisePathways(ctx context.Context, side Side, filter P
 		q = q.Where("risk_id = ?", filter.RiskID)
 	}
 	q = containing(q, filter.Query, "title", "scenario")
-	pathways, err := listOf[Pathway](m, q.Order("created_at").Limit(capped(filter.Limit)), rolePathway)
+	pathways, err := listOf[Pathway](m, q.Order("created_at").Limit(pageOf(ctx, filter.Limit)), rolePathway)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (m *riskManager) rankedBarriersOn(ctx context.Context, side Side, filter Me
 	return q.Order(risks + ".created_at").Order(risks + ".id").
 		Order(pathways + ".created_at").Order(pathways + ".id").
 		Order(barriers + `."position"`).Order(barriers + ".created_at").
-		Limit(capped(filter.Limit))
+		Limit(pageOf(ctx, filter.Limit))
 }
 
 func (m *riskManager) measureScope(ctx context.Context, side Side, filter MeasureFilter) (bool, error) {

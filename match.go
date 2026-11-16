@@ -16,7 +16,7 @@ func (m *riskManager) Match(ctx context.Context, filter MatchFilter) (Matches, e
 	if term == "" {
 		return out, nil
 	}
-	limit := capped(filter.Limit)
+	limit := pageOf(ctx, filter.Limit)
 	risks, err := listOf[Risk](m, containing(m.q(ctx, roleRisk), term, "title").Order("created_at").Limit(limit), roleRisk)
 	if err != nil {
 		return Matches{}, err
