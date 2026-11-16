@@ -23,6 +23,14 @@ The error text is the same on every path, so a client cannot tell which one refu
 
 The register compared names with `SameName` (composed form, edge spaces). It now compares the folded key, so `Network firewall`, `network FIREWALL`, `Network   firewall` and ` Network firewall. ` are one control name. Renaming a control to its own name in another form is still allowed, because the check leaves the control itself out.
 
+## What runs under the lock
+
+Only the free-name check and the write run under `controlNames` (hub issue RM11). The owner lookup calls another module, which may be a database or a network round trip, and a plain mutex does not give up when the waiter's context ends, so a lookup held under the lock stalled every other create and rename past its own deadline. `CreateControl` always looked the owner up before taking the lock. `UpdateControl` now does the same: it reads the control, runs the field checks and the owner lookup for a changed owner, and only then takes the lock, reads the control again and checks the name and writes.
+
+The lookup compares the new owner with the owner the control held at the first read. If another request changed the owner in between, the write still stores the owner the caller named, which was either the owner the control already held or one the register just knew. The caller now gets an unknown owner before a name conflict, where it used to get the conflict first.
+
+`control_owner_lock_test.go` parks an owner lookup of one update, then creates another control with a 200 ms context and expects it to finish; on the old code it was still waiting two seconds later.
+
 ## Controls stored before the key existed
 
 `Provision` runs `spec.Migrate`, which adds the empty column and the index, and then fills `name_key` of every control whose key is not the fold of its name, oldest first (`created_at`, then `id`), in one transaction. Where two stored controls fold to one key, which can only be a pair stored by the race above, the oldest takes the key and the others keep an empty key; nothing is deleted, renamed or merged, and a warning with the count is logged on each `Provision`. A control with an empty key is still seen by the in-process check, which scans the names, but the index cannot refuse a new twin of it from another process until the pair is resolved. Which of the pair to keep, rename or merge is the owner's choice (todo "Owner choice" on RM10). A host that calls `spec.Migrate` itself instead of `Provision` has the column and the index but no backfill.

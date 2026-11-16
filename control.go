@@ -73,6 +73,17 @@ func (m *riskManager) ListControls(ctx context.Context, filter ControlFilter) ([
 }
 
 func (m *riskManager) UpdateControl(ctx context.Context, c Control) (Control, error) {
+	read, err := m.GetControl(ctx, c.ID)
+	if err != nil {
+		return Control{}, err
+	}
+	if err := m.checks(roleControl, controlChangedTo(read, c, m.now())); err != nil {
+		return Control{}, err
+	}
+	if err := m.ownerChanged(ctx, "control's owner", read.Owner, c.Owner); err != nil {
+		return Control{}, err
+	}
+
 	m.controlNames.Lock()
 	defer m.controlNames.Unlock()
 	held, err := m.GetControl(ctx, c.ID)
@@ -84,25 +95,21 @@ func (m *riskManager) UpdateControl(ctx context.Context, c Control) (Control, er
 			return Control{}, err
 		}
 	}
+	next := controlChangedTo(held, c, m.now())
+	if err := m.update(ctx, roleControl, next.ID, next); err != nil {
+		return Control{}, nameTaken(err, next.Name)
+	}
+	return next, nil
+}
 
+func controlChangedTo(held, c Control, at string) Control {
 	held.Name = c.Name
 	held.NameKey = controlNameKey(c.Name)
 	held.Description = c.Description
-	priorOwner := held.Owner
 	held.Owner = c.Owner
 	held.Doc = c.Doc
-	held.UpdatedAt = m.now()
-
-	if err := m.checks(roleControl, held); err != nil {
-		return Control{}, err
-	}
-	if err := m.ownerChanged(ctx, "control's owner", priorOwner, held.Owner); err != nil {
-		return Control{}, err
-	}
-	if err := m.update(ctx, roleControl, held.ID, held); err != nil {
-		return Control{}, nameTaken(err, held.Name)
-	}
-	return held, nil
+	held.UpdatedAt = at
+	return held
 }
 
 type failingCount struct {
