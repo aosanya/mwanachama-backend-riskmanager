@@ -3,6 +3,8 @@ package riskmanager
 import (
 	"context"
 	"fmt"
+
+	"github.com/aosanya/mwanachama-backend-shared/plaintext"
 )
 
 func (m *riskManager) CreateControl(ctx context.Context, c Control) (Control, error) {
@@ -12,7 +14,7 @@ func (m *riskManager) CreateControl(ctx context.Context, c Control) (Control, er
 	if err := m.ownerKnown(ctx, "control's owner", c.Owner); err != nil {
 		return Control{}, err
 	}
-	if err := m.nameIsFree(ctx, c.Name); err != nil {
+	if err := m.nameIsFree(ctx, c.Name, ""); err != nil {
 		return Control{}, err
 	}
 	c.ID = newID()
@@ -24,13 +26,20 @@ func (m *riskManager) CreateControl(ctx context.Context, c Control) (Control, er
 	return c, nil
 }
 
-func (m *riskManager) nameIsFree(ctx context.Context, name string) error {
-	taken, err := m.count(ctx, roleControl, "name = ?", name)
-	if err != nil {
+type controlName struct {
+	ID   string
+	Name string
+}
+
+func (m *riskManager) nameIsFree(ctx context.Context, name, exceptID string) error {
+	var held []controlName
+	if err := m.q(ctx, roleControl).Select("id", "name").Find(&held).Error; err != nil {
 		return err
 	}
-	if taken > 0 {
-		return fmt.Errorf("%w: a control called %q already exists", ErrConflict, name)
+	for _, other := range held {
+		if other.ID != exceptID && plaintext.SameName(other.Name, name) {
+			return fmt.Errorf("%w: a control called %q already exists", ErrConflict, name)
+		}
 	}
 	return nil
 }
@@ -58,7 +67,7 @@ func (m *riskManager) UpdateControl(ctx context.Context, c Control) (Control, er
 		return Control{}, err
 	}
 	if c.Name != held.Name {
-		if err := m.nameIsFree(ctx, c.Name); err != nil {
+		if err := m.nameIsFree(ctx, c.Name, held.ID); err != nil {
 			return Control{}, err
 		}
 	}
