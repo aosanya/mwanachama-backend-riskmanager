@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"gorm.io/gorm"
@@ -75,6 +76,7 @@ type riskManager struct {
 	owners       identity.Owner
 	ownerObjects []string
 	tasks        identity.Owner
+	controlNames sync.Mutex
 }
 
 func NewRiskManager(db *gorm.DB, s *spec.Spec, opts ...Option) (RiskManager, error) {

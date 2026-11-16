@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/aosanya/mwanachama-backend-shared/gormutil"
 	"github.com/aosanya/mwanachama-backend-shared/plaintext"
 )
 
@@ -14,6 +15,8 @@ func (m *riskManager) CreateControl(ctx context.Context, c Control) (Control, er
 	if err := m.ownerKnown(ctx, "control's owner", c.Owner); err != nil {
 		return Control{}, err
 	}
+	m.controlNames.Lock()
+	defer m.controlNames.Unlock()
 	if err := m.nameIsFree(ctx, c.Name, ""); err != nil {
 		return Control{}, err
 	}
@@ -21,9 +24,16 @@ func (m *riskManager) CreateControl(ctx context.Context, c Control) (Control, er
 	c.CreatedAt = m.now()
 	c.UpdatedAt = c.CreatedAt
 	if err := m.insert(ctx, roleControl, c); err != nil {
-		return Control{}, err
+		return Control{}, nameTaken(err, c.Name)
 	}
 	return c, nil
+}
+
+func nameTaken(err error, name string) error {
+	if gormutil.IsUniqueViolation(err) {
+		return fmt.Errorf("%w: a control called %q already exists", ErrConflict, name)
+	}
+	return err
 }
 
 type controlName struct {
@@ -62,6 +72,8 @@ func (m *riskManager) ListControls(ctx context.Context, filter ControlFilter) ([
 }
 
 func (m *riskManager) UpdateControl(ctx context.Context, c Control) (Control, error) {
+	m.controlNames.Lock()
+	defer m.controlNames.Unlock()
 	held, err := m.GetControl(ctx, c.ID)
 	if err != nil {
 		return Control{}, err
@@ -86,7 +98,7 @@ func (m *riskManager) UpdateControl(ctx context.Context, c Control) (Control, er
 		return Control{}, err
 	}
 	if err := m.update(ctx, roleControl, held.ID, held); err != nil {
-		return Control{}, err
+		return Control{}, nameTaken(err, held.Name)
 	}
 	return held, nil
 }

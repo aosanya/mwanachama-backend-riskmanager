@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/glebarez/sqlite"
@@ -22,6 +23,8 @@ const (
 	rounds = 12
 )
 
+var memoryDatabases atomic.Int64
+
 type controlStore struct {
 	name string
 	open func(t *testing.T) *gorm.DB
@@ -33,7 +36,7 @@ var controlStores = []controlStore{
 		return openControlDB(t, dsn)
 	}},
 	{"sqlite shared memory", func(t *testing.T) *gorm.DB {
-		dsn := "file:" + strings.ReplaceAll(t.Name(), "/", "_") + "?mode=memory&cache=shared&_pragma=busy_timeout(10000)"
+		dsn := "file:" + fmt.Sprintf("risk%d", memoryDatabases.Add(1)) + "?mode=memory&cache=shared&_pragma=busy_timeout(10000)"
 		return openControlDB(t, dsn)
 	}},
 }
@@ -133,7 +136,7 @@ func TestControlCreate_SimultaneousCreatesOfOneNameLeaveOneControlAndAConflictFo
 }
 
 func TestControlCreate_SimultaneousCreatesOfComposedAndDecomposedTwinsLeaveOneControl(t *testing.T) {
-	forms := []string{"Hálózati tűzfal", "Hálózáti tűzfal"}
+	forms := []string{"H\u00e1l\u00f3zati t\u0171zfal", "Ha\u0301lo\u0301zati tu\u030bzfal"}
 	for _, store := range controlStores {
 		t.Run(store.name, func(t *testing.T) {
 			ctx := context.Background()
