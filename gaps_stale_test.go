@@ -14,7 +14,7 @@ func daysAgo(n int) string {
 
 func staleBarrier(t *testing.T, retestDays int, outcome riskmanager.Outcome, recordedAt string) (riskmanager.RiskManager, riskmanager.Risk, riskmanager.Barrier) {
 	t.Helper()
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	b, err := rm.PlaceBarrier(ctx, riskmanager.Barrier{
 		PathwayID: seedThreat(t, rm, ctx, r.ID, "t").ID, ControlID: seedControl(t, rm, ctx, "c", "o").ID, RetestDays: retestDays,
@@ -93,7 +93,7 @@ func TestAFreshlyTestedBarrierWithAWindowStaysProven(t *testing.T) {
 }
 
 func TestARetestWindowCanBeSetAndClearedOnAPlacedBarrierButNotMadeNegative(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	b := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r.ID, "t").ID, seedControl(t, rm, ctx, "c", "o").ID)
 	set, err := rm.UpdateBarrier(ctx, riskmanager.BarrierChange{ID: b.ID, RetestDays: seedPtr(180)})

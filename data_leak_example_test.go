@@ -68,7 +68,7 @@ func (w *leakWorld) route(t *testing.T, side riskmanager.Side, r leakRoute) {
 
 func leakBuild(t *testing.T) *leakWorld {
 	t.Helper()
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	w := &leakWorld{rm: rm, ctx: ctx, pathways: map[string]riskmanager.Pathway{}, controls: map[string]riskmanager.Control{}, barriers: map[string]riskmanager.Barrier{}}
 	risk, err := rm.CreateRisk(ctx, riskmanager.Risk{
 		Title:    "Loss of control over sensitive enterprise data through AI",

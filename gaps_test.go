@@ -8,7 +8,7 @@ import (
 )
 
 func TestAFullyAssessedProvenAndOwnedBowTieHasNoGaps(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedCleanRisk(t, rm, ctx, "clean")
 	if got := seedGapsOf(t, rm, ctx, riskmanager.GapFilter{RiskID: r.ID}); len(got) != 0 {
 		t.Fatalf("a clean bow-tie reports %d gap(s): %+v", len(got), got)
@@ -16,7 +16,7 @@ func TestAFullyAssessedProvenAndOwnedBowTieHasNoGaps(t *testing.T) {
 }
 
 func TestARiskNobodyOwnsIsAGap(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r, err := rm.CreateRisk(ctx, riskmanager.Risk{Title: "orphan", TopEvent: "e"})
 	seedNoErr(t, err)
 	got := seedGapsOf(t, rm, ctx, riskmanager.GapFilter{RiskID: r.ID, Kind: models.GapRiskUnowned})
@@ -26,7 +26,7 @@ func TestARiskNobodyOwnsIsAGap(t *testing.T) {
 }
 
 func TestABowTieWithOneSideMissingReportsEachMissingSide(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	bare := seedRisk(t, rm, ctx, "bare")
 	if n := seedKinds(seedGapsOf(t, rm, ctx, riskmanager.GapFilter{RiskID: bare.ID}))[models.GapRiskOneSided]; n != 2 {
 		t.Fatalf("no threats and no consequences reported %d one-sided gap(s), want 2", n)
@@ -39,7 +39,7 @@ func TestABowTieWithOneSideMissingReportsEachMissingSide(t *testing.T) {
 }
 
 func TestEachMissingRatingKindIsItsOwnGap(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	if n := seedKinds(seedGapsOf(t, rm, ctx, riskmanager.GapFilter{RiskID: r.ID}))[models.GapRiskUnrated]; n != 2 {
 		t.Fatalf("nothing rated reported %d, want inherent and residual both missing", n)
@@ -55,7 +55,7 @@ func TestEachMissingRatingKindIsItsOwnGap(t *testing.T) {
 }
 
 func TestAPathwayWithNothingStandingOnItIsUnguardedOnEitherSide(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	threat := seedThreat(t, rm, ctx, r.ID, "t")
 	consequence := seedConsequence(t, rm, ctx, r.ID, "c")
@@ -68,7 +68,7 @@ func TestAPathwayWithNothingStandingOnItIsUnguardedOnEitherSide(t *testing.T) {
 }
 
 func TestABarrierThatHasNotReachedTestedIsAnUntestedGapUntilItDoes(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	b := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r.ID, "t").ID, seedControl(t, rm, ctx, "c", "o").ID)
 	for _, m := range []riskmanager.Maturity{riskmanager.MaturityProposed, riskmanager.MaturityDesigned, riskmanager.MaturityDeployed} {
@@ -89,7 +89,7 @@ func TestABarrierThatHasNotReachedTestedIsAnUntestedGapUntilItDoes(t *testing.T)
 }
 
 func TestABarrierWhoseLatestEvidenceIsNotAPassIsFailingUntilAPassFollowsIt(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	b := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r.ID, "t").ID, seedControl(t, rm, ctx, "c", "o").ID)
 	failing := func() bool {
@@ -117,7 +117,7 @@ func TestABarrierWhoseLatestEvidenceIsNotAPassIsFailingUntilAPassFollowsIt(t *te
 }
 
 func TestAControlNobodyOperatesIsReportedOncePerRiskHoweverManyPathwaysItStandsOn(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r1 := seedRisk(t, rm, ctx, "one")
 	r2 := seedRisk(t, rm, ctx, "two")
 	orphan := seedControl(t, rm, ctx, "orphan", "")
@@ -136,7 +136,7 @@ func TestAControlNobodyOperatesIsReportedOncePerRiskHoweverManyPathwaysItStandsO
 }
 
 func TestAnActionWithNoDueDateOrOnePastItIsAGapAndAFinishedOneIsNot(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	undated := seedAction(t, rm, ctx, r.ID, "", "undated", "")
 	overdue := seedAction(t, rm, ctx, r.ID, "", "overdue", "2020-01-01T00:00:00Z")
@@ -166,7 +166,7 @@ func TestAnActionWithNoDueDateOrOnePastItIsAGapAndAFinishedOneIsNot(t *testing.T
 }
 
 func TestARetiredRiskReportsNoGapsHoweverBareItWas(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedOpenRisk(t, rm, ctx, "x")
 	seedThreat(t, rm, ctx, r.ID, "unguarded")
 	seedAction(t, rm, ctx, r.ID, "", "undated", "")
@@ -185,7 +185,7 @@ func TestARetiredRiskReportsNoGapsHoweverBareItWas(t *testing.T) {
 }
 
 func TestTheRegisterWideListingCoversEveryRiskThatIsNotRetired(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	draft := seedRisk(t, rm, ctx, "draft")
 	open := seedOpenRisk(t, rm, ctx, "open")
 	accepted := seedOpenRisk(t, rm, ctx, "accepted")
@@ -205,7 +205,7 @@ func TestTheRegisterWideListingCoversEveryRiskThatIsNotRetired(t *testing.T) {
 }
 
 func TestGapsFilterByKindAndByRisk(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r1 := seedRisk(t, rm, ctx, "one")
 	r2 := seedRisk(t, rm, ctx, "two")
 	seedThreat(t, rm, ctx, r1.ID, "a")
@@ -230,13 +230,13 @@ func TestGapsFilterByKindAndByRisk(t *testing.T) {
 }
 
 func TestGapsForAMissingRiskAreNotFound(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	_, err := rm.Gaps(ctx, riskmanager.GapFilter{RiskID: "nowhere"})
 	seedWantErr(t, err, riskmanager.ErrRiskNotFound)
 }
 
 func TestEveryGapNamesItsRiskItsSubjectAndSaysWhatIsWrong(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r, err := rm.CreateRisk(ctx, riskmanager.Risk{Title: "everything wrong", TopEvent: "e"})
 	seedNoErr(t, err)
 	threat := seedThreat(t, rm, ctx, r.ID, "t")

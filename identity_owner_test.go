@@ -29,7 +29,7 @@ func holdOneOfEach(t *testing.T, rm riskmanager.RiskManager, ctx context.Context
 }
 
 func TestStableIdentityIsTheRawRiskmanagerInstanceMountRoleAndRowId(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	for role, id := range holdOneOfEach(t, rm, ctx) {
 		raw, err := rm.StableIdentity(ctx, role, id)
 		if err != nil {
@@ -47,7 +47,7 @@ func TestStableIdentityIsTheRawRiskmanagerInstanceMountRoleAndRowId(t *testing.T
 }
 
 func TestResolveRefusesWhatIsNotThisRegistersWithTheSharedErrors(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	held := holdOneOfEach(t, rm, ctx)
 	raw, err := rm.StableIdentity(ctx, riskmanager.RoleRisk, held[riskmanager.RoleRisk])
 	if err != nil {

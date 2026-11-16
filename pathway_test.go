@@ -7,7 +7,7 @@ import (
 )
 
 func TestAPathwayNeedsARiskASideAndATitle(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	for name, p := range map[string]riskmanager.Pathway{
 		"no side":      {RiskID: r.ID, Title: "t"},
@@ -23,13 +23,13 @@ func TestAPathwayNeedsARiskASideAndATitle(t *testing.T) {
 }
 
 func TestAPathwayOnAMissingRiskIsAnInvalidReference(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	_, err := rm.CreatePathway(ctx, riskmanager.Pathway{RiskID: "nowhere", Side: riskmanager.SideThreat, Title: "t"})
 	seedWantErr(t, err, riskmanager.ErrInvalidReference)
 }
 
 func TestUpdatingAPathwayNeverMovesItsSideOrItsRisk(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	other := seedRisk(t, rm, ctx, "y")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
@@ -52,7 +52,7 @@ func TestUpdatingAPathwayNeverMovesItsSideOrItsRisk(t *testing.T) {
 }
 
 func TestUpdatingAPathwayToAnEmptyTitleIsRefused(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	_, err := rm.UpdatePathway(ctx, riskmanager.Pathway{ID: p.ID, Title: ""})
@@ -64,7 +64,7 @@ func TestUpdatingAPathwayToAnEmptyTitleIsRefused(t *testing.T) {
 }
 
 func TestAMissingPathwayIsNotFound(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	_, err := rm.GetPathway(ctx, "nobody")
 	seedWantErr(t, err, riskmanager.ErrPathwayNotFound)
 	_, err = rm.UpdatePathway(ctx, riskmanager.Pathway{ID: "nobody", Title: "t"})
@@ -73,7 +73,7 @@ func TestAMissingPathwayIsNotFound(t *testing.T) {
 }
 
 func TestAPathwayWithNothingUnderItCanBeDeleted(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	seedNoErr(t, rm.DeletePathway(ctx, p.ID))
@@ -82,7 +82,7 @@ func TestAPathwayWithNothingUnderItCanBeDeleted(t *testing.T) {
 }
 
 func TestAPathwayWithABarrierOnItCannotBeDeleted(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	seedBarrier(t, rm, ctx, p.ID, seedControl(t, rm, ctx, "c", "o").ID)
@@ -93,7 +93,7 @@ func TestAPathwayWithABarrierOnItCannotBeDeleted(t *testing.T) {
 }
 
 func TestAPathwayAChildRiskDrillsIntoCannotBeDeleted(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	_, err := rm.CreateRisk(ctx, riskmanager.Risk{Title: "child", TopEvent: "c", ParentPathwayID: p.ID})
@@ -102,7 +102,7 @@ func TestAPathwayAChildRiskDrillsIntoCannotBeDeleted(t *testing.T) {
 }
 
 func TestARetiredRiskTakesNoFurtherChangeAnywhereUnderIt(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedOpenRisk(t, rm, ctx, "x")
 	t1 := seedThreat(t, rm, ctx, r.ID, "t1")
 	t2 := seedThreat(t, rm, ctx, r.ID, "t2")
@@ -169,7 +169,7 @@ func TestARetiredRiskTakesNoFurtherChangeAnywhereUnderIt(t *testing.T) {
 }
 
 func TestARetiredRiskCanStillBeRead(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedOpenRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	seedRetire(t, rm, ctx, r.ID)

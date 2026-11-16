@@ -8,7 +8,7 @@ import (
 )
 
 func TestANewActionIsOpenAndNeedsARiskAndATitle(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	a, err := rm.CreateAction(ctx, riskmanager.Action{RiskID: r.ID, Title: "do it", Status: riskmanager.ActionDone})
 	seedNoErr(t, err)
@@ -24,7 +24,7 @@ func TestANewActionIsOpenAndNeedsARiskAndATitle(t *testing.T) {
 }
 
 func TestAnActionWithADueDateThatIsNotRFC3339IsRefused(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	_, err := rm.CreateAction(ctx, riskmanager.Action{RiskID: r.ID, Title: "t", DueAt: "next friday"})
 	seedWantErr(t, err, riskmanager.ErrInvalid)
@@ -34,7 +34,7 @@ func TestAnActionWithADueDateThatIsNotRFC3339IsRefused(t *testing.T) {
 }
 
 func TestAnActionAboutABarrierOfAnotherRiskOrOfNoBarrierIsAnInvalidReference(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r1 := seedRisk(t, rm, ctx, "one")
 	r2 := seedRisk(t, rm, ctx, "two")
 	b2 := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r2.ID, "t").ID, seedControl(t, rm, ctx, "c", "o").ID)
@@ -50,7 +50,7 @@ func TestAnActionAboutABarrierOfAnotherRiskOrOfNoBarrierIsAnInvalidReference(t *
 func TestDoneAndDroppedAreTheEndOfTheRoadAndStampWhenTheyHappened(t *testing.T) {
 	for _, end := range []riskmanager.ActionStatus{riskmanager.ActionDone, riskmanager.ActionDropped} {
 		t.Run(string(end), func(t *testing.T) {
-			rm, ctx := newManager(t)
+			rm, ctx := newAISafetyManager(t)
 			r := seedRisk(t, rm, ctx, "x")
 			a := seedAction(t, rm, ctx, r.ID, "", "t", "2026-12-31T00:00:00Z")
 			moving, err := rm.SetActionStatus(ctx, a.ID, riskmanager.ActionInProgress)
@@ -79,7 +79,7 @@ func TestDoneAndDroppedAreTheEndOfTheRoadAndStampWhenTheyHappened(t *testing.T) 
 }
 
 func TestAnActionMayStepBackFromInProgressToOpenButNotPastTheEnd(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	a := seedAction(t, rm, ctx, r.ID, "", "t", "2026-12-31T00:00:00Z")
 	_, err := rm.SetActionStatus(ctx, a.ID, riskmanager.ActionInProgress)
@@ -96,7 +96,7 @@ func TestAnActionMayStepBackFromInProgressToOpenButNotPastTheEnd(t *testing.T) {
 }
 
 func TestAClosedActionTakesNoFurtherEdits(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	a := seedAction(t, rm, ctx, r.ID, "", "t", "2026-12-31T00:00:00Z")
 	_, err := rm.SetActionStatus(ctx, a.ID, riskmanager.ActionDone)
@@ -110,7 +110,7 @@ func TestAClosedActionTakesNoFurtherEdits(t *testing.T) {
 }
 
 func TestUpdatingAnActionNeverMovesItsRiskItsBarrierItsStatusOrItsClosedAt(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	other := seedRisk(t, rm, ctx, "y")
 	b := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r.ID, "t").ID, seedControl(t, rm, ctx, "c", "o").ID)
@@ -133,7 +133,7 @@ func TestUpdatingAnActionNeverMovesItsRiskItsBarrierItsStatusOrItsClosedAt(t *te
 }
 
 func TestAMissingActionIsNotFound(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	_, err := rm.UpdateAction(ctx, riskmanager.Action{ID: "nobody", Title: "t"})
 	seedWantErr(t, err, riskmanager.ErrActionNotFound)
 	_, err = rm.SetActionStatus(ctx, "nobody", riskmanager.ActionDone)
@@ -141,7 +141,7 @@ func TestAMissingActionIsNotFound(t *testing.T) {
 }
 
 func TestActionsFilterByRiskBarrierAndStatus(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r1 := seedRisk(t, rm, ctx, "one")
 	r2 := seedRisk(t, rm, ctx, "two")
 	b := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r1.ID, "t").ID, seedControl(t, rm, ctx, "c", "o").ID)

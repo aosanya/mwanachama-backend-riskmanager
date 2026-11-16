@@ -8,7 +8,7 @@ import (
 )
 
 func TestANewRiskIsAlwaysADraftEvenWhenTheCallerSaysOpen(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r, err := rm.CreateRisk(ctx, riskmanager.Risk{Title: "x", TopEvent: "y", Owner: "o", Status: riskmanager.StatusOpen})
 	seedNoErr(t, err)
 	if r.Status != riskmanager.StatusDraft {
@@ -22,7 +22,7 @@ func TestANewRiskIsAlwaysADraftEvenWhenTheCallerSaysOpen(t *testing.T) {
 }
 
 func TestACallerCannotChooseTheIDOfANewRisk(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r, err := rm.CreateRisk(ctx, riskmanager.Risk{ID: "mine", Title: "x", TopEvent: "y"})
 	seedNoErr(t, err)
 	if r.ID == "mine" || r.ID == "" {
@@ -31,7 +31,7 @@ func TestACallerCannotChooseTheIDOfANewRisk(t *testing.T) {
 }
 
 func TestARiskWithoutATitleOrATopEventIsRefused(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	for name, r := range map[string]riskmanager.Risk{
 		"no title":        {TopEvent: "y"},
 		"blank title":     {Title: "   ", TopEvent: "y"},
@@ -47,7 +47,7 @@ func TestARiskWithoutATitleOrATopEventIsRefused(t *testing.T) {
 }
 
 func TestADraftCannotOpenWithoutAnOwner(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r, err := rm.CreateRisk(ctx, riskmanager.Risk{Title: "x", TopEvent: "y"})
 	seedNoErr(t, err)
 	_, err = rm.SetRiskStatus(ctx, r.ID, riskmanager.StatusOpen)
@@ -59,7 +59,7 @@ func TestADraftCannotOpenWithoutAnOwner(t *testing.T) {
 }
 
 func TestAnOwnedDraftOpens(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedOpenRisk(t, rm, ctx, "x")
 	if r.Status != riskmanager.StatusOpen {
 		t.Fatalf("status = %s", r.Status)
@@ -67,7 +67,7 @@ func TestAnOwnedDraftOpens(t *testing.T) {
 }
 
 func TestAStatusThatIsNotOneOfTheDeclaredSetIsRefused(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	_, err := rm.SetRiskStatus(ctx, r.ID, "bogus")
 	seedWantErr(t, err, riskmanager.ErrInvalid)
@@ -76,7 +76,7 @@ func TestAStatusThatIsNotOneOfTheDeclaredSetIsRefused(t *testing.T) {
 }
 
 func TestARiskCannotBeAcceptedUntilItsResidualExposureIsRated(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedOpenRisk(t, rm, ctx, "x")
 	_, err := rm.SetRiskStatus(ctx, r.ID, riskmanager.StatusAccepted)
 	seedWantErr(t, err, riskmanager.ErrInvalid)
@@ -95,7 +95,7 @@ func TestARiskCannotBeAcceptedUntilItsResidualExposureIsRated(t *testing.T) {
 }
 
 func TestADraftCannotBeAcceptedDirectly(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	seedAssessment(t, rm, ctx, r.ID, riskmanager.AssessmentResidual, 2, 3, "2026-01-02T00:00:00Z")
 	_, err := rm.SetRiskStatus(ctx, r.ID, riskmanager.StatusAccepted)
@@ -103,7 +103,7 @@ func TestADraftCannotBeAcceptedDirectly(t *testing.T) {
 }
 
 func TestAnAcceptedRiskCanBeReopened(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedOpenRisk(t, rm, ctx, "x")
 	seedAssessment(t, rm, ctx, r.ID, riskmanager.AssessmentResidual, 2, 3, "2026-01-02T00:00:00Z")
 	_, err := rm.SetRiskStatus(ctx, r.ID, riskmanager.StatusAccepted)
@@ -118,7 +118,7 @@ func TestAnAcceptedRiskCanBeReopened(t *testing.T) {
 func TestRetiredIsTheEndOfTheRoadFromEveryStatus(t *testing.T) {
 	for _, from := range []riskmanager.Status{riskmanager.StatusDraft, riskmanager.StatusOpen} {
 		t.Run(string(from), func(t *testing.T) {
-			rm, ctx := newManager(t)
+			rm, ctx := newAISafetyManager(t)
 			r := seedRisk(t, rm, ctx, "x")
 			if from == riskmanager.StatusOpen {
 				r = seedOpenRisk(t, rm, ctx, "x2")
@@ -135,14 +135,14 @@ func TestRetiredIsTheEndOfTheRoadFromEveryStatus(t *testing.T) {
 }
 
 func TestOpenCannotGoBackToDraft(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedOpenRisk(t, rm, ctx, "x")
 	_, err := rm.SetRiskStatus(ctx, r.ID, riskmanager.StatusDraft)
 	seedWantErr(t, err, riskmanager.ErrInvalid)
 }
 
 func TestAnOpenRiskCannotBeUpdatedToAnEmptyOwner(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedOpenRisk(t, rm, ctx, "x")
 	r.Owner = ""
 	_, err := rm.UpdateRisk(ctx, r)
@@ -154,7 +154,7 @@ func TestAnOpenRiskCannotBeUpdatedToAnEmptyOwner(t *testing.T) {
 }
 
 func TestADraftMayBeUpdatedToHaveNoOwner(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	r.Owner = ""
 	updated, err := rm.UpdateRisk(ctx, r)
@@ -165,7 +165,7 @@ func TestADraftMayBeUpdatedToHaveNoOwner(t *testing.T) {
 }
 
 func TestUpdatingARiskNeverChangesItsStatusItsParentOrItsCreationTime(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	parent := seedOpenRisk(t, rm, ctx, "parent")
 	pathway := seedThreat(t, rm, ctx, parent.ID, "t")
 	other := seedThreat(t, rm, ctx, parent.ID, "u")
@@ -197,7 +197,7 @@ func TestUpdatingARiskNeverChangesItsStatusItsParentOrItsCreationTime(t *testing
 }
 
 func TestAChildRiskDrillsIntoAPathway(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	parent := seedOpenRisk(t, rm, ctx, "parent")
 	pathway := seedThreat(t, rm, ctx, parent.ID, "t")
 	child, err := rm.CreateRisk(ctx, riskmanager.Risk{Title: "child", TopEvent: "c", ParentPathwayID: pathway.ID})
@@ -213,13 +213,13 @@ func TestAChildRiskDrillsIntoAPathway(t *testing.T) {
 }
 
 func TestAChildRiskNamingAMissingPathwayIsAnInvalidReference(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	_, err := rm.CreateRisk(ctx, riskmanager.Risk{Title: "child", TopEvent: "c", ParentPathwayID: "nowhere"})
 	seedWantErr(t, err, riskmanager.ErrInvalidReference)
 }
 
 func TestAChildRiskCannotDrillIntoAPathwayOfARetiredRisk(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	parent := seedOpenRisk(t, rm, ctx, "parent")
 	pathway := seedThreat(t, rm, ctx, parent.ID, "t")
 	seedRetire(t, rm, ctx, parent.ID)
@@ -228,7 +228,7 @@ func TestAChildRiskCannotDrillIntoAPathwayOfARetiredRisk(t *testing.T) {
 }
 
 func TestListingRisksFiltersByStatusOwnerAndWords(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	a := seedOpenRisk(t, rm, ctx, "Data leak through assistants")
 	b, err := rm.CreateRisk(ctx, riskmanager.Risk{Title: "Vendor failure", TopEvent: "A supplier stops", Hazard: "Concentrated DATA custody", Owner: "owner-9"})
 	seedNoErr(t, err)
@@ -266,7 +266,7 @@ func TestListingRisksFiltersByStatusOwnerAndWords(t *testing.T) {
 }
 
 func TestAWordSearchTreatsPercentAndUnderscoreLiterally(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	pct := seedRisk(t, rm, ctx, "50% of records")
 	under := seedRisk(t, rm, ctx, "audit_log exposure")
 	seedRisk(t, rm, ctx, "plain risk")
@@ -289,7 +289,7 @@ func TestAWordSearchTreatsPercentAndUnderscoreLiterally(t *testing.T) {
 }
 
 func TestAMissingRiskIsNotFound(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	_, err := rm.GetRisk(ctx, "nobody")
 	seedWantErr(t, err, riskmanager.ErrRiskNotFound)
 	_, err = rm.UpdateRisk(ctx, riskmanager.Risk{ID: "nobody", Title: "x", TopEvent: "y"})

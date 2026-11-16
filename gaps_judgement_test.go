@@ -15,7 +15,7 @@ import (
 func TestAJudgementOfPartialOrInadequateIsADesignAndACoverageGapAndNotAnUnassessedOne(t *testing.T) {
 	for _, j := range []riskmanager.Judgement{riskmanager.JudgementPartial, riskmanager.JudgementInadequate} {
 		t.Run(string(j), func(t *testing.T) {
-			rm, ctx := newManager(t)
+			rm, ctx := newAISafetyManager(t)
 			r := seedRisk(t, rm, ctx, "x")
 			b := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r.ID, "t").ID, seedControl(t, rm, ctx, "c", "o").ID)
 			_, err := rm.UpdateBarrier(ctx, riskmanager.BarrierChange{ID: b.ID, Design: &j, Coverage: &j})
@@ -32,7 +32,7 @@ func TestAJudgementOfPartialOrInadequateIsADesignAndACoverageGapAndNotAnUnassess
 }
 
 func TestABarrierWithPartialDesignAndAdequateCoverageRaisesDesignButNotUnassessed(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	b := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r.ID, "t").ID, seedControl(t, rm, ctx, "c", "o").ID)
 	_, err := rm.UpdateBarrier(ctx, riskmanager.BarrierChange{
@@ -46,7 +46,7 @@ func TestABarrierWithPartialDesignAndAdequateCoverageRaisesDesignButNotUnassesse
 }
 
 func TestAFreshBarrierRaisesExactlyOneUnassessedGapAndOneUntestedGapAndNamesWhatIsMissing(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	b := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r.ID, "t").ID, seedControl(t, rm, ctx, "c", "o").ID)
 	assess := func() (map[riskmanager.GapKind]int, string) {
@@ -85,7 +85,7 @@ func TestAFreshBarrierRaisesExactlyOneUnassessedGapAndOneUntestedGapAndNamesWhat
 }
 
 func TestOnlyAnAdequateJudgementClearsTheDesignCoverageAndUnassessedGaps(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	b := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r.ID, "t").ID, seedControl(t, rm, ctx, "c", "o").ID)
 	adequate := riskmanager.JudgementAdequate

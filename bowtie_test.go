@@ -9,7 +9,7 @@ import (
 )
 
 func TestABowTieShowsBothArmsWithTheBarriersOnEachInPositionOrder(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	other := seedRisk(t, rm, ctx, "elsewhere")
 	t1 := seedThreat(t, rm, ctx, r.ID, "t1")
@@ -50,7 +50,7 @@ func TestABowTieShowsBothArmsWithTheBarriersOnEachInPositionOrder(t *testing.T) 
 }
 
 func TestEachBarrierOnTheBowTieShowsItsControlItsLatestEvidenceAndHowMuchThereIs(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	c := seedControl(t, rm, ctx, "guard", "the team")
@@ -80,7 +80,7 @@ func TestEachBarrierOnTheBowTieShowsItsControlItsLatestEvidenceAndHowMuchThereIs
 }
 
 func TestTheBowTieShowsTheLatestRatingOfEachKindWithItsScoreAndBand(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	seedAssessment(t, rm, ctx, r.ID, riskmanager.AssessmentInherent, 5, 4, "2026-01-01T00:00:00Z")
 	seedAssessment(t, rm, ctx, r.ID, riskmanager.AssessmentResidual, 3, 3, "2026-01-01T00:00:00Z")
@@ -103,7 +103,7 @@ func TestTheBowTieShowsTheLatestRatingOfEachKindWithItsScoreAndBand(t *testing.T
 }
 
 func TestARiskThatDrillsIntoAPathwayShowsUpOnThatArmAndOnNoOther(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	drilled := seedThreat(t, rm, ctx, r.ID, "drilled")
 	plain := seedThreat(t, rm, ctx, r.ID, "plain")
@@ -130,7 +130,7 @@ func TestARiskThatDrillsIntoAPathwayShowsUpOnThatArmAndOnNoOther(t *testing.T) {
 }
 
 func TestTheBowTieListsTheActionsOfTheRiskInEveryStatus(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	other := seedRisk(t, rm, ctx, "y")
 	open := seedAction(t, rm, ctx, r.ID, "", "open one", "2999-01-01T00:00:00Z")
@@ -151,7 +151,7 @@ func TestTheBowTieListsTheActionsOfTheRiskInEveryStatus(t *testing.T) {
 }
 
 func TestAnEmptyBowTieEncodesEveryListAsAnEmptyArrayAndNeverNull(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	bt, err := rm.Bowtie(ctx, r.ID)
 	seedNoErr(t, err)
@@ -182,13 +182,13 @@ func TestAnEmptyBowTieEncodesEveryListAsAnEmptyArrayAndNeverNull(t *testing.T) {
 }
 
 func TestTheBowTieOfAMissingRiskIsNotFound(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	_, err := rm.Bowtie(ctx, "nowhere")
 	seedWantErr(t, err, riskmanager.ErrRiskNotFound)
 }
 
 func TestWhatReliesOnAControlIsEveryPathwayAcrossEveryRiskItStandsOn(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r1 := seedRisk(t, rm, ctx, "first risk")
 	r2 := seedRisk(t, rm, ctx, "second risk")
 	r3 := seedRisk(t, rm, ctx, "third risk")
@@ -225,7 +225,7 @@ func TestWhatReliesOnAControlIsEveryPathwayAcrossEveryRiskItStandsOn(t *testing.
 }
 
 func TestWhatReliesOnAMissingControlIsNotFoundAndOnAnUnusedOneIsNothing(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	_, err := rm.Reliance(ctx, "nowhere")
 	seedWantErr(t, err, riskmanager.ErrControlNotFound)
 	idle := seedControl(t, rm, ctx, "idle", "o")
@@ -237,7 +237,7 @@ func TestWhatReliesOnAMissingControlIsNotFoundAndOnAnUnusedOneIsNothing(t *testi
 }
 
 func TestACommonCauseFailureIsVisibleFromTheOneControlThatFailsEverywhere(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r1 := seedRisk(t, rm, ctx, "first")
 	r2 := seedRisk(t, rm, ctx, "second")
 	shared := seedControl(t, rm, ctx, "shared", "o")

@@ -31,7 +31,7 @@ func seedFullRisk(t *testing.T, rm riskmanager.RiskManager, ctx context.Context,
 }
 
 func TestEveryRiskIsReviewedHoweverManyThereAre(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	const risks = 130
 	for i := range risks {
 		seedRisk(t, rm, ctx, fmt.Sprintf("risk %d", i))
@@ -43,7 +43,7 @@ func TestEveryRiskIsReviewedHoweverManyThereAre(t *testing.T) {
 }
 
 func TestABowTieHoldingMoreThanAHundredBarriersIsReadWhole(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "wide")
 	threat := seedThreat(t, rm, ctx, r.ID, "t")
 	const barriers = 120
@@ -92,7 +92,7 @@ func TestOneRisksGapsAreAlsoReadInAFixedNumberOfQueries(t *testing.T) {
 }
 
 func TestGapsReadAcrossTheRegisterAreTheGapsEachBowTieReportsAlone(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	var ids []string
 	for i := range 12 {
 		ids = append(ids, seedFullRisk(t, rm, ctx, i).ID)

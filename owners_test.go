@@ -111,7 +111,7 @@ func TestOnlyTheDeclaredObjectsCanOwn(t *testing.T) {
 }
 
 func TestWithoutAnOwnerDirectoryAnyOwnerStringIsKept(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	if _, err := rm.CreateRisk(ctx, riskmanager.Risk{Title: "r", TopEvent: "e", Owner: "whoever"}); err != nil {
 		t.Fatal(err)
 	}

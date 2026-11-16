@@ -9,7 +9,7 @@ import (
 )
 
 func TestARatingOffTheOneToFiveScaleIsRefused(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	for _, c := range []struct{ likelihood, impact int }{
 		{0, 3}, {3, 0}, {6, 3}, {3, 6}, {-1, 3}, {3, -1}, {0, 0}, {100, 100},
@@ -28,7 +28,7 @@ func TestARatingOffTheOneToFiveScaleIsRefused(t *testing.T) {
 }
 
 func TestARatingNeedsARiskThatExistsAndAKindFromTheDeclaredSet(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	_, err := rm.RecordAssessment(ctx, riskmanager.Assessment{RiskID: "nowhere", Kind: riskmanager.AssessmentResidual, Likelihood: 1, Impact: 1})
 	seedWantErr(t, err, riskmanager.ErrInvalidReference)
@@ -41,7 +41,7 @@ func TestARatingNeedsARiskThatExistsAndAKindFromTheDeclaredSet(t *testing.T) {
 }
 
 func TestARatingWithATimeThatIsNotRFC3339IsRefusedAndAMissingOneIsNow(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	_, err := rm.RecordAssessment(ctx, riskmanager.Assessment{
 		RiskID: r.ID, Kind: riskmanager.AssessmentResidual, Likelihood: 1, Impact: 1, AssessedAt: "last week",
@@ -82,7 +82,7 @@ func TestTheBandsFollowTheScoreAtEveryEdge(t *testing.T) {
 }
 
 func TestTheBowTieReportsTheBandOfTheLatestRating(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	seedAssessment(t, rm, ctx, r.ID, riskmanager.AssessmentInherent, 4, 4, "2026-01-01T00:00:00Z")
 	bt, err := rm.Bowtie(ctx, r.ID)
@@ -96,7 +96,7 @@ func TestTheBowTieReportsTheBandOfTheLatestRating(t *testing.T) {
 }
 
 func TestTheLatestRatingOfEachKindWinsByWhenItWasMadeNotWhenItWasEntered(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	seedAssessment(t, rm, ctx, r.ID, riskmanager.AssessmentResidual, 2, 2, "2026-02-01T00:00:00Z")
 	seedAssessment(t, rm, ctx, r.ID, riskmanager.AssessmentResidual, 5, 5, "2026-01-01T00:00:00Z")
@@ -117,7 +117,7 @@ func TestTheLatestRatingOfEachKindWinsByWhenItWasMadeNotWhenItWasEntered(t *test
 }
 
 func TestRatingsAreListedOldestFirstAndFilterByKindAndRisk(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	other := seedRisk(t, rm, ctx, "y")
 	seedAssessment(t, rm, ctx, r.ID, riskmanager.AssessmentResidual, 3, 3, "2026-03-01T00:00:00Z")

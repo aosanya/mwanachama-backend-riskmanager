@@ -50,7 +50,7 @@ func loadedSpec(t *testing.T) *spec.Spec {
 }
 
 func TestImportingTheLibraryBuildsTheBowTieAndItsRetrievalSubBowTie(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	opened := 0
 	report, err := riskmanager.ImportLibrary(ctx, loadedSpec(t), aiSafetyLibrary(t), importer(rm, &opened))
 	seedNoErr(t, err)
@@ -80,7 +80,7 @@ func TestImportingTheLibraryBuildsTheBowTieAndItsRetrievalSubBowTie(t *testing.T
 }
 
 func TestImportingTheLibraryTwiceChangesNothingTheSecondTime(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	opened := 0
 	s, lib := loadedSpec(t), aiSafetyLibrary(t)
 	_, err := riskmanager.ImportLibrary(ctx, s, lib, importer(rm, &opened))
@@ -112,7 +112,7 @@ func registerSize(t *testing.T, rm riskmanager.RiskManager, ctx context.Context)
 }
 
 func TestARowThatFailsCheckIsRefusedBeforeAConnectionIsOpened(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	lib := aiSafetyLibrary(t)
 	lib.Pathways[3].Controls[0].Name = ""
 	opened := 0

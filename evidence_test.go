@@ -28,7 +28,7 @@ func TestTheManagerOffersNoWayToEditOrDeleteEvidenceOrAssessments(t *testing.T) 
 }
 
 func TestEvidenceNamingAMissingBarrierIsAnInvalidReference(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	_, err := rm.RecordEvidence(ctx, riskmanager.Evidence{
 		BarrierID: "nowhere", Kind: riskmanager.EvidenceTest, Outcome: riskmanager.OutcomePass, Summary: "s",
 	})
@@ -36,7 +36,7 @@ func TestEvidenceNamingAMissingBarrierIsAnInvalidReference(t *testing.T) {
 }
 
 func TestEvidenceWithoutASummaryAKindOrAnOutcomeIsRefused(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	b := seedGuarded(t, rm, ctx)
 	good := riskmanager.Evidence{BarrierID: b.ID, Kind: riskmanager.EvidenceAudit, Outcome: riskmanager.OutcomePass, Summary: "s"}
 	for name, mutate := range map[string]func(e *riskmanager.Evidence){
@@ -63,7 +63,7 @@ func TestEvidenceWithoutASummaryAKindOrAnOutcomeIsRefused(t *testing.T) {
 }
 
 func TestEvidenceTakesTheTimeItArrivedWhenNoneIsGiven(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	b := seedGuarded(t, rm, ctx)
 	before := time.Now().UTC().Add(-2 * time.Second)
 	e, err := rm.RecordEvidence(ctx, riskmanager.Evidence{
@@ -83,7 +83,7 @@ func TestEvidenceTakesTheTimeItArrivedWhenNoneIsGiven(t *testing.T) {
 }
 
 func TestEvidenceWithATimeThatIsNotRFC3339IsRefused(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	b := seedGuarded(t, rm, ctx)
 	for _, bad := range []string{"yesterday", "2026-01-01", "2026-01-01 10:00:00", "01/02/2026"} {
 		_, err := rm.RecordEvidence(ctx, riskmanager.Evidence{
@@ -94,7 +94,7 @@ func TestEvidenceWithATimeThatIsNotRFC3339IsRefused(t *testing.T) {
 }
 
 func TestEvidenceIsListedByWhenItWasTakenNotByWhenItWasEntered(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	b := seedGuarded(t, rm, ctx)
 	for _, at := range []string{"2026-03-01T00:00:00Z", "2026-01-01T00:00:00Z", "2026-02-01T00:00:00Z"} {
 		seedEvidence(t, rm, ctx, b.ID, riskmanager.OutcomePass, at)
@@ -113,7 +113,7 @@ func TestEvidenceIsListedByWhenItWasTakenNotByWhenItWasEntered(t *testing.T) {
 }
 
 func TestEvidenceFiltersByBarrierAndByTheWindowItWasTakenIn(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	b1 := seedGuarded(t, rm, ctx)
 	r2 := seedRisk(t, rm, ctx, "y")
 	b2 := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r2.ID, "t2").ID, seedControl(t, rm, ctx, "c2", "o").ID)
@@ -148,7 +148,7 @@ func TestEvidenceFiltersByBarrierAndByTheWindowItWasTakenIn(t *testing.T) {
 }
 
 func TestAFailingPieceOfEvidenceDoesNotRewriteThePassingOneBeforeIt(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	b := seedGuarded(t, rm, ctx)
 	first := seedEvidence(t, rm, ctx, b.ID, riskmanager.OutcomePass, "2026-01-01T00:00:00Z")
 	second := seedEvidence(t, rm, ctx, b.ID, riskmanager.OutcomeFail, "2026-02-01T00:00:00Z")
@@ -186,7 +186,7 @@ func TestAMeasureStandsProvenWeakUnprovenOrFailingByWhatTheLatestEvidenceShows(t
 		{"no evidence beats a weak design", riskmanager.JudgementPartial, adequate, nil, riskmanager.StandingUnproven},
 	} {
 		t.Run(c.name, func(t *testing.T) {
-			rm, ctx := newManager(t)
+			rm, ctx := newAISafetyManager(t)
 			r := seedRisk(t, rm, ctx, "x")
 			p := seedThreat(t, rm, ctx, r.ID, "t")
 			b := seedBarrier(t, rm, ctx, p.ID, seedControl(t, rm, ctx, "c", "o").ID)

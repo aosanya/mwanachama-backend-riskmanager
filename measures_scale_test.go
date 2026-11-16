@@ -27,7 +27,7 @@ func TestAMeasureQueryIsMatchedInSQLSoOnlyTheMatchesAreLoaded(t *testing.T) {
 }
 
 func TestAMeasureQueryMatchesThePathwayOrTheControlAndTheLimitCutsTheRankedList(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "r")
 	threat := seedThreat(t, rm, ctx, r.ID, "Prompt injection")
 	other := seedThreat(t, rm, ctx, r.ID, "Other")

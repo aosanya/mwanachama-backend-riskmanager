@@ -7,7 +7,7 @@ import (
 )
 
 func TestABarrierStartsUnassessedAndProposedAndCopiesItsRiskFromItsPathway(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	c := seedControl(t, rm, ctx, "c", "o")
@@ -29,7 +29,7 @@ func TestABarrierStartsUnassessedAndProposedAndCopiesItsRiskFromItsPathway(t *te
 }
 
 func TestABarrierNamingAMissingPathwayOrControlIsAnInvalidReference(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	c := seedControl(t, rm, ctx, "c", "o")
@@ -42,7 +42,7 @@ func TestABarrierNamingAMissingPathwayOrControlIsAnInvalidReference(t *testing.T
 }
 
 func TestOneControlStandingTwiceOnOnePathwayIsAConflict(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	c := seedControl(t, rm, ctx, "c", "o")
@@ -56,7 +56,7 @@ func TestOneControlStandingTwiceOnOnePathwayIsAConflict(t *testing.T) {
 }
 
 func TestOneControlMayStandOnManyPathways(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p1 := seedThreat(t, rm, ctx, r.ID, "t1")
 	p2 := seedThreat(t, rm, ctx, r.ID, "t2")
@@ -71,7 +71,7 @@ func TestOneControlMayStandOnManyPathways(t *testing.T) {
 }
 
 func TestAControlCannotClaimToBeTestedOrMonitoredWithNothingOnRecord(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	c := seedControl(t, rm, ctx, "c", "o")
@@ -91,7 +91,7 @@ func TestAControlCannotClaimToBeTestedOrMonitoredWithNothingOnRecord(t *testing.
 }
 
 func TestEvenAFailingPieceOfEvidenceLetsABarrierReachTested(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	b := seedBarrier(t, rm, ctx, p.ID, seedControl(t, rm, ctx, "c", "o").ID)
@@ -106,7 +106,7 @@ func TestEvenAFailingPieceOfEvidenceLetsABarrierReachTested(t *testing.T) {
 }
 
 func TestMaturityMayFallBackAsWellAsRise(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	b := seedSoundBarrier(t, rm, ctx, p.ID, seedControl(t, rm, ctx, "c", "o").ID)
@@ -118,7 +118,7 @@ func TestMaturityMayFallBackAsWellAsRise(t *testing.T) {
 }
 
 func TestUpdatingABarrierLeavesWhatTheChangeDoesNotNameAlone(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	b := seedBarrier(t, rm, ctx, p.ID, seedControl(t, rm, ctx, "c", "o").ID)
@@ -143,7 +143,7 @@ func TestUpdatingABarrierLeavesWhatTheChangeDoesNotNameAlone(t *testing.T) {
 }
 
 func TestABarrierCannotBeGivenAJudgementOutsideTheDeclaredSet(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	b := seedBarrier(t, rm, ctx, p.ID, seedControl(t, rm, ctx, "c", "o").ID)
@@ -158,14 +158,14 @@ func TestABarrierCannotBeGivenAJudgementOutsideTheDeclaredSet(t *testing.T) {
 }
 
 func TestAMissingBarrierIsNotFound(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	_, err := rm.UpdateBarrier(ctx, riskmanager.BarrierChange{ID: "nobody", Notes: seedPtr("x")})
 	seedWantErr(t, err, riskmanager.ErrBarrierNotFound)
 	seedWantErr(t, rm.RemoveBarrier(ctx, "nobody"), riskmanager.ErrBarrierNotFound)
 }
 
 func TestABarrierWithEvidenceCannotBeRemoved(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	b := seedBarrier(t, rm, ctx, p.ID, seedControl(t, rm, ctx, "c", "o").ID)
@@ -177,7 +177,7 @@ func TestABarrierWithEvidenceCannotBeRemoved(t *testing.T) {
 }
 
 func TestABarrierAnActionIsAboutCannotBeRemoved(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	b := seedBarrier(t, rm, ctx, p.ID, seedControl(t, rm, ctx, "c", "o").ID)
@@ -186,7 +186,7 @@ func TestABarrierAnActionIsAboutCannotBeRemoved(t *testing.T) {
 }
 
 func TestABarrierWithNothingOnRecordCanBeRemovedAndPlacedAgain(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	c := seedControl(t, rm, ctx, "c", "o")
@@ -199,7 +199,7 @@ func TestABarrierWithNothingOnRecordCanBeRemovedAndPlacedAgain(t *testing.T) {
 }
 
 func TestBarriersAreListedByPositionThenByWhenTheyWerePlaced(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	p := seedThreat(t, rm, ctx, r.ID, "t")
 	names := []string{"first", "second", "third", "fourth"}
@@ -222,7 +222,7 @@ func TestBarriersAreListedByPositionThenByWhenTheyWerePlaced(t *testing.T) {
 }
 
 func TestBarriersFilterByRiskPathwayAndControl(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r1 := seedRisk(t, rm, ctx, "one")
 	r2 := seedRisk(t, rm, ctx, "two")
 	p1 := seedThreat(t, rm, ctx, r1.ID, "t1")

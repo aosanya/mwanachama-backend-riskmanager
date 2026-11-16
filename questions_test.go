@@ -28,7 +28,7 @@ func seedMeasuresBy(measures []riskmanager.Measure) map[string]riskmanager.Measu
 }
 
 func TestTheThreatsOfARiskAreItsThreatPathwaysAndTheConsequencesItsConsequencePathways(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	other := seedRisk(t, rm, ctx, "y")
 	seedThreat(t, rm, ctx, r.ID, "t1")
@@ -54,7 +54,7 @@ func TestTheThreatsOfARiskAreItsThreatPathwaysAndTheConsequencesItsConsequencePa
 }
 
 func TestAskingAboutAMissingRiskIsNotFoundAndNotAnEmptyAnswer(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	_, err := rm.Threats(ctx, riskmanager.PathwayFilter{RiskID: "nowhere"})
 	seedWantErr(t, err, riskmanager.ErrRiskNotFound)
 	_, err = rm.Consequences(ctx, riskmanager.PathwayFilter{RiskID: "nowhere"})
@@ -66,7 +66,7 @@ func TestAskingAboutAMissingRiskIsNotFoundAndNotAnEmptyAnswer(t *testing.T) {
 }
 
 func TestAskingForThreatsWithNoRiskReadsEveryRisksThreatsAndHonoursTheLimit(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r1 := seedRisk(t, rm, ctx, "one")
 	r2 := seedRisk(t, rm, ctx, "two")
 	seedThreat(t, rm, ctx, r1.ID, "a")
@@ -82,7 +82,7 @@ func TestAskingForThreatsWithNoRiskReadsEveryRisksThreatsAndHonoursTheLimit(t *t
 }
 
 func TestThreatsAreFoundByWordsInTheirTitleOrScenarioInAnyCase(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r1 := seedRisk(t, rm, ctx, "one")
 	r2 := seedRisk(t, rm, ctx, "two")
 	_, err := rm.CreatePathway(ctx, riskmanager.Pathway{RiskID: r1.ID, Side: riskmanager.SideThreat, Title: "Retrieval of restricted files", Scenario: "an assistant reads a file"})
@@ -105,7 +105,7 @@ func TestThreatsAreFoundByWordsInTheirTitleOrScenarioInAnyCase(t *testing.T) {
 }
 
 func TestPercentAndUnderscoreInAThreatSearchMatchLiterally(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	seedThreat(t, rm, ctx, r.ID, "50% of the records")
 	seedThreat(t, rm, ctx, r.ID, "audit_log exposure")
@@ -119,7 +119,7 @@ func TestPercentAndUnderscoreInAThreatSearchMatchLiterally(t *testing.T) {
 }
 
 func TestASummaryCountsTheBarriersOnItAndTheRisksThatDrillIntoIt(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	guarded := seedThreat(t, rm, ctx, r.ID, "guarded")
 	seedThreat(t, rm, ctx, r.ID, "bare")
@@ -140,7 +140,7 @@ func TestASummaryCountsTheBarriersOnItAndTheRisksThatDrillIntoIt(t *testing.T) {
 }
 
 func TestPreventiveMeasuresAreOnlyOnThreatsAndMitigatingOnlyOnConsequences(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	threat := seedThreat(t, rm, ctx, r.ID, "t")
 	consequence := seedConsequence(t, rm, ctx, r.ID, "c")
@@ -176,7 +176,7 @@ func TestPreventiveMeasuresAreOnlyOnThreatsAndMitigatingOnlyOnConsequences(t *te
 }
 
 func TestAMeasureCarriesTheRiskThePathwayTheBarrierAndTheControl(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "the risk")
 	p := seedThreat(t, rm, ctx, r.ID, "the threat")
 	c := seedControl(t, rm, ctx, "the control", "o")
@@ -198,7 +198,7 @@ func TestAMeasureCarriesTheRiskThePathwayTheBarrierAndTheControl(t *testing.T) {
 }
 
 func TestAskingForMeasuresAgainstAPathwayOfTheOtherSideIsRefused(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	threat := seedThreat(t, rm, ctx, r.ID, "t")
 	consequence := seedConsequence(t, rm, ctx, r.ID, "c")
@@ -211,7 +211,7 @@ func TestAskingForMeasuresAgainstAPathwayOfTheOtherSideIsRefused(t *testing.T) {
 }
 
 func TestAPathwayThatBelongsToAnotherRiskAnswersNothing(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r1 := seedRisk(t, rm, ctx, "one")
 	r2 := seedRisk(t, rm, ctx, "two")
 	p := seedThreat(t, rm, ctx, r1.ID, "t")
@@ -224,7 +224,7 @@ func TestAPathwayThatBelongsToAnotherRiskAnswersNothing(t *testing.T) {
 }
 
 func TestMeasuresAreFoundByWordsInTheControlOrThePathwayInAnyCase(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	paste := seedThreat(t, rm, ctx, r.ID, "Pasted records")
 	other := seedThreat(t, rm, ctx, r.ID, "Something else")
@@ -252,7 +252,7 @@ func TestMeasuresAreFoundByWordsInTheControlOrThePathwayInAnyCase(t *testing.T) 
 }
 
 func TestNothingFoundIsAnEmptyListAndNeverNull(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "x")
 	c := seedControl(t, rm, ctx, "unused", "o")
 	threats, err := rm.Threats(ctx, riskmanager.PathwayFilter{RiskID: r.ID})

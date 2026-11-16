@@ -10,7 +10,7 @@ import (
 )
 
 func TestTheKindFilterAppliesBeforePagingSoAPageCountsOnlyThatKind(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	seedMixedRegister(t, rm, ctx)
 	many := seedRisk(t, rm, ctx, "many open routes")
 	for _, title := range []string{"r1", "r2", "r3", "r4", "r5"} {
@@ -28,7 +28,7 @@ func TestTheKindFilterAppliesBeforePagingSoAPageCountsOnlyThatKind(t *testing.T)
 }
 
 func TestPagingWalksTheWholeListWithoutRepeatsOrGaps(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	seedMixedRegister(t, rm, ctx)
 	full := seedGapsOf(t, rm, ctx, riskmanager.GapFilter{})
 	if len(full) != 13 {
@@ -52,7 +52,7 @@ func TestPagingWalksTheWholeListWithoutRepeatsOrGaps(t *testing.T) {
 }
 
 func TestAnOffsetAtOrPastTheEndIsAnEmptyListAndNeverNull(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	seedMixedRegister(t, rm, ctx)
 	full := seedGapsOf(t, rm, ctx, riskmanager.GapFilter{})
 	for _, offset := range []int{len(full), len(full) + 1, 100000} {
@@ -66,7 +66,7 @@ func TestAnOffsetAtOrPastTheEndIsAnEmptyListAndNeverNull(t *testing.T) {
 }
 
 func TestANegativeOffsetAndANonPositiveLimitFallBackToTheStartAndTheDefaultPage(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	seedMixedRegister(t, rm, ctx)
 	full := seedGapKeys(seedGapsOf(t, rm, ctx, riskmanager.GapFilter{}))
 	for _, f := range []riskmanager.GapFilter{{Offset: -5}, {Limit: -1}, {Limit: 0}, {Limit: 5000}} {
@@ -77,7 +77,7 @@ func TestANegativeOffsetAndANonPositiveLimitFallBackToTheStartAndTheDefaultPage(
 }
 
 func TestAnUnknownKindOrSeverityIsRefusedRatherThanAnsweredWithNothing(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	seedMixedRegister(t, rm, ctx)
 	for _, f := range []riskmanager.GapFilter{{Kind: "nonsense"}, {Severity: "urgent"}, {Kind: models.GapRiskUnowned, Severity: "critical"}} {
 		_, err := rm.Gaps(ctx, f)

@@ -45,7 +45,7 @@ func newManagerFor(t *testing.T, domain string) (riskmanager.RiskManager, contex
 	return rm, context.Background()
 }
 
-func newManager(t *testing.T) (riskmanager.RiskManager, context.Context) {
+func newAISafetyManager(t *testing.T) (riskmanager.RiskManager, context.Context) {
 	t.Helper()
 	return newManagerFor(t, "ai_safety")
 }

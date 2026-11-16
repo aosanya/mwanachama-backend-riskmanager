@@ -12,7 +12,7 @@ import (
 const taskRef = "taskmanager/hub/task-1"
 
 func TestAnActionCanCarryTheReferenceOfTheTaskThatTracksIt(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	r := seedRisk(t, rm, ctx, "r")
 	a, err := rm.CreateAction(ctx, riskmanager.Action{RiskID: r.ID, Title: "w", TaskRef: taskRef})
 	seedNoErr(t, err)

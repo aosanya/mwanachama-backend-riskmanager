@@ -33,7 +33,7 @@ func failingNames(t *testing.T, rm riskmanager.RiskManager, ctx context.Context,
 }
 
 func TestControlsFailingOnTheMostBarriersComeFirst(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	lightest := seedControl(t, rm, ctx, "lightest", "ops")
 	weakest := seedControl(t, rm, ctx, "weakest", "sec")
 	middle := seedControl(t, rm, ctx, "middle", "sec")
@@ -52,7 +52,7 @@ func TestControlsFailingOnTheMostBarriersComeFirst(t *testing.T) {
 }
 
 func TestOnlyTheLatestEvidenceDecidesWhetherABarrierIsFailing(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	c := seedControl(t, rm, ctx, "mended", "o")
 	r := seedRisk(t, rm, ctx, "r")
 	b := seedBarrier(t, rm, ctx, seedThreat(t, rm, ctx, r.ID, "t").ID, c.ID)
@@ -67,7 +67,7 @@ func TestOnlyTheLatestEvidenceDecidesWhetherABarrierIsFailing(t *testing.T) {
 }
 
 func TestAControlWithNoEvidenceOrOnlyOnARetiredRiskIsNotFailing(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	standOnNewRisks(t, rm, ctx, seedControl(t, rm, ctx, "untried", "o"), "")
 	gone := seedControl(t, rm, ctx, "gone", "o")
 	r := seedRisk(t, rm, ctx, "retiring")
@@ -80,7 +80,7 @@ func TestAControlWithNoEvidenceOrOnlyOnARetiredRiskIsNotFailing(t *testing.T) {
 }
 
 func TestTheFailingFilterNarrowsByOwnerAndLimitAndTiesGoByName(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	standOnNewRisks(t, rm, ctx, seedControl(t, rm, ctx, "b", "sec"), riskmanager.OutcomeFail)
 	standOnNewRisks(t, rm, ctx, seedControl(t, rm, ctx, "a", "sec"), riskmanager.OutcomeFail)
 	standOnNewRisks(t, rm, ctx, seedControl(t, rm, ctx, "c", "ops"), riskmanager.OutcomeFail)
@@ -96,7 +96,7 @@ func TestTheFailingFilterNarrowsByOwnerAndLimitAndTiesGoByName(t *testing.T) {
 }
 
 func TestWithoutTheFailingFilterEveryControlIsListedByNameAsBefore(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	standOnNewRisks(t, rm, ctx, seedControl(t, rm, ctx, "b", "o"), riskmanager.OutcomeFail)
 	seedControl(t, rm, ctx, "a", "o")
 	got, err := rm.ListControls(ctx, riskmanager.ControlFilter{})

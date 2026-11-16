@@ -83,7 +83,7 @@ func seedKindsOfSubject(gaps []riskmanager.Gap, subjectID string) map[riskmanage
 }
 
 func TestGapsOfOneRiskComeHighThenMediumThenLowKeepingTheOrderTheyWereFoundIn(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	reg := seedMixedRegister(t, rm, ctx)
 	gaps := seedGapsOf(t, rm, ctx, riskmanager.GapFilter{RiskID: reg.mixed.ID})
 
@@ -103,7 +103,7 @@ func TestGapsOfOneRiskComeHighThenMediumThenLowKeepingTheOrderTheyWereFoundIn(t 
 }
 
 func TestABowtieRanksItsOwnGapsWithoutTheManagersHelp(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	reg := seedMixedRegister(t, rm, ctx)
 	bt, err := rm.Bowtie(ctx, reg.mixed.ID)
 	seedNoErr(t, err)
@@ -115,7 +115,7 @@ func TestABowtieRanksItsOwnGapsWithoutTheManagersHelp(t *testing.T) {
 }
 
 func TestGapsAcrossTheRegisterAreRankedTogetherAndNotRiskByRisk(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	reg := seedMixedRegister(t, rm, ctx)
 	gaps := seedGapsOf(t, rm, ctx, riskmanager.GapFilter{})
 
@@ -149,7 +149,7 @@ func TestGapsAcrossTheRegisterAreRankedTogetherAndNotRiskByRisk(t *testing.T) {
 }
 
 func TestTheSeverityFilterKeepsOnlyThatSeverityAndTheThreeTogetherAreTheWholeList(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	seedMixedRegister(t, rm, ctx)
 	all := seedGapsOf(t, rm, ctx, riskmanager.GapFilter{})
 
@@ -172,7 +172,7 @@ func TestTheSeverityFilterKeepsOnlyThatSeverityAndTheThreeTogetherAreTheWholeLis
 }
 
 func TestAGapCarriesItsSeverityInTheAnswerItSerialises(t *testing.T) {
-	rm, ctx := newManager(t)
+	rm, ctx := newAISafetyManager(t)
 	reg := seedMixedRegister(t, rm, ctx)
 	gaps := seedGapsOf(t, rm, ctx, riskmanager.GapFilter{RiskID: reg.high.ID, Kind: models.GapPathwayUnguarded})
 	if len(gaps) != 1 {
