@@ -3,6 +3,7 @@ package models
 type Control struct {
 	ID              string         `json:"id"`
 	Name            string         `json:"name"`
+	NameKey         string         `json:"-"`
 	Description     string         `json:"description,omitempty"`
 	Owner           string         `json:"owner,omitempty"`
 	Doc             map[string]any `json:"doc,omitempty"`

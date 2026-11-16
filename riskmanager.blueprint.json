@@ -168,6 +168,11 @@
           "unique": true
         },
         {
+          "name": "name_key",
+          "type": "string",
+          "description": "The name folded the way the register compares names: composed form, lower case, runs of spaces made one, trailing dots and spaces dropped. Written with the name and never read from a caller. Empty only on a control stored before the key existed, until Provision fills it."
+        },
+        {
           "name": "description",
           "type": "text",
           "description": "What the control does and what it is meant to stop, detect or limit."
@@ -191,6 +196,22 @@
           "name": "updated_at",
           "type": "timestamp",
           "description": "When the row was last written."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "name_key",
+          "description": "Refuses a second control whose name folds to the same key, across every process on the database. The raw name index cannot, because a composed name and its decomposed twin are two values to it. Rows with no key yet are left out.",
+          "fields": [
+            "name_key"
+          ],
+          "unique": true,
+          "where": [
+            {
+              "field": "name_key",
+              "op": "not_empty"
+            }
+          ]
         }
       ]
     },

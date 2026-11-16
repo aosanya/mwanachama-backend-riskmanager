@@ -6,4 +6,9 @@ import (
 	"github.com/aosanya/mwanachama-backend-shared/spec"
 )
 
-func Provision(db *gorm.DB, s *spec.Spec) error { return spec.Migrate(db, s) }
+func Provision(db *gorm.DB, s *spec.Spec) error {
+	if err := spec.Migrate(db, s); err != nil {
+		return err
+	}
+	return backfillControlNameKeys(db, s)
+}

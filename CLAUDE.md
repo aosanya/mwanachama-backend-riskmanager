@@ -101,7 +101,9 @@ about:
   placement or on update.
 - **A barrier with evidence or actions cannot be removed**; a pathway with
   barriers or drill-down risks cannot be deleted.
-- **A control name is unique**; renaming onto a taken name is `ErrConflict`.
+- **A control name is unique**, compared folded (composed form, case, space
+  runs, trailing dots) through the `name_key` column and its partial unique
+  index; renaming onto a taken name is `ErrConflict`.
 - **An assessment's likelihood and impact are each 1 to 5.**
 - **An action's status moves `open ⇄ in_progress → done | dropped`**;
   `done` and `dropped` are the end and set `closed_at`.

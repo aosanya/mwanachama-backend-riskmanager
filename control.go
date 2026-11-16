@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/aosanya/mwanachama-backend-shared/gormutil"
-	"github.com/aosanya/mwanachama-backend-shared/plaintext"
 )
 
 func (m *riskManager) CreateControl(ctx context.Context, c Control) (Control, error) {
@@ -21,6 +20,7 @@ func (m *riskManager) CreateControl(ctx context.Context, c Control) (Control, er
 		return Control{}, err
 	}
 	c.ID = newID()
+	c.NameKey = controlNameKey(c.Name)
 	c.CreatedAt = m.now()
 	c.UpdatedAt = c.CreatedAt
 	if err := m.insert(ctx, roleControl, c); err != nil {
@@ -46,8 +46,9 @@ func (m *riskManager) nameIsFree(ctx context.Context, name, exceptID string) err
 	if err := m.q(ctx, roleControl).Select("id", "name").Find(&held).Error; err != nil {
 		return err
 	}
+	key := controlNameKey(name)
 	for _, other := range held {
-		if other.ID != exceptID && plaintext.SameName(other.Name, name) {
+		if other.ID != exceptID && controlNameKey(other.Name) == key {
 			return fmt.Errorf("%w: a control called %q already exists", ErrConflict, name)
 		}
 	}
@@ -85,6 +86,7 @@ func (m *riskManager) UpdateControl(ctx context.Context, c Control) (Control, er
 	}
 
 	held.Name = c.Name
+	held.NameKey = controlNameKey(c.Name)
 	held.Description = c.Description
 	priorOwner := held.Owner
 	held.Owner = c.Owner
