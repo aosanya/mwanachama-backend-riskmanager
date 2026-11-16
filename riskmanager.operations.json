@@ -681,7 +681,26 @@
       "call": "Gaps",
       "action": "riskmanager.gap.list",
       "title": "List gaps",
-      "description": "Where the bow-ties are weak, worked out on the spot and never stored, ranked high to low. High: a threat or consequence nothing stands on, a barrier whose latest evidence failed, and work gone past its date. Medium: a risk with no owner, no ratings or only one side, a barrier rated partial or inadequate, a barrier whose latest evidence is older than its retest window, a control nobody operates, and work with no date. Low: a barrier not yet assessed or not yet tested. Each gap carries its severity. Pass risk_id for one risk, kind for one sort of gap, severity (high, medium or low) for one rank, and limit and offset to page through the list. Retired risks have none.",
+      "description": "Where the bow-ties are weak, worked out on the spot and never stored, ranked high to low. High: a threat or consequence nothing stands on, a barrier whose latest evidence failed, and work gone past its date. Medium: a risk with no owner, no ratings or only one side, a barrier rated partial or inadequate, a barrier whose latest evidence is older than its retest window, a control nobody operates, and work with no date. Low: a barrier not yet assessed or not yet tested. Each gap carries its severity. Pass risk_id for one risk, owner for the gaps in the risks one owner holds, kind for one sort of gap, severity (high, medium or low) for one rank, and limit and offset to page through the list. Retired risks have none.",
+      "args": [
+        {
+          "from": "query",
+          "whole": true
+        }
+      ],
+      "returns": [
+        {
+          "body": true
+        }
+      ]
+    },
+    "match_names": {
+      "method": "GET",
+      "path": "/matches",
+      "call": "Match",
+      "action": "riskmanager.match.list",
+      "title": "Find risks and controls by name",
+      "description": "Find the risks and controls whose name contains the words in query, so a plain name can be turned into the key the other questions need. Each option carries its kind, key and label. ambiguous is true when more than one matches, and the caller should then offer the options as buttons and ask which is meant instead of guessing.",
       "args": [
         {
           "from": "query",

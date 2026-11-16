@@ -13,7 +13,7 @@ func (m *riskManager) Gaps(ctx context.Context, filter GapFilter) ([]Gap, error)
 	if err := gapFilterKnown(filter); err != nil {
 		return nil, err
 	}
-	reviewed, err := m.reviewedRisks(ctx, filter.RiskID)
+	reviewed, err := m.reviewedRisks(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -34,16 +34,22 @@ func (m *riskManager) Gaps(ctx context.Context, filter GapFilter) ([]Gap, error)
 	return pageOfGaps(narrowedGaps(ranked, filter), filter), nil
 }
 
-func (m *riskManager) reviewedRisks(ctx context.Context, riskID string) (func() *gorm.DB, error) {
-	if riskID == "" {
+func (m *riskManager) reviewedRisks(ctx context.Context, filter GapFilter) (func() *gorm.DB, error) {
+	owned := func(q *gorm.DB) *gorm.DB {
+		if filter.Owner == "" {
+			return q
+		}
+		return q.Where("owner = ?", filter.Owner)
+	}
+	if filter.RiskID == "" {
 		return func() *gorm.DB {
-			return m.q(ctx, roleRisk).Where("status <> ?", string(StatusRetired))
+			return owned(m.q(ctx, roleRisk).Where("status <> ?", string(StatusRetired)))
 		}, nil
 	}
-	if _, err := m.GetRisk(ctx, riskID); err != nil {
+	if _, err := m.GetRisk(ctx, filter.RiskID); err != nil {
 		return nil, err
 	}
-	return func() *gorm.DB { return m.q(ctx, roleRisk).Where("id = ?", riskID) }, nil
+	return func() *gorm.DB { return owned(m.q(ctx, roleRisk).Where("id = ?", filter.RiskID)) }, nil
 }
 
 func narrowedGaps(gaps []Gap, filter GapFilter) []Gap {

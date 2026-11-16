@@ -65,8 +65,26 @@ type MeasureFilter struct {
 
 type GapFilter struct {
 	RiskID   string   `json:"risk_id" query:"risk_id"`
+	Owner    string   `json:"owner" query:"owner"`
 	Kind     GapKind  `json:"kind" query:"kind"`
 	Severity Severity `json:"severity" query:"severity"`
 	Limit    int      `json:"limit" query:"limit"`
 	Offset   int      `json:"offset" query:"offset"`
+}
+
+type MatchFilter struct {
+	Query string `json:"query" query:"query"`
+	Limit int    `json:"limit" query:"limit"`
+}
+
+type MatchOption struct {
+	Kind  string `json:"kind"`
+	ID    string `json:"id"`
+	Label string `json:"label"`
+}
+
+type Matches struct {
+	Query     string        `json:"query"`
+	Ambiguous bool          `json:"ambiguous"`
+	Options   []MatchOption `json:"options"`
 }

@@ -63,6 +63,7 @@ type RiskManager interface {
 
 	Bowtie(ctx context.Context, riskID string) (Bowtie, error)
 	Gaps(ctx context.Context, filter GapFilter) ([]Gap, error)
+	Match(ctx context.Context, filter MatchFilter) (Matches, error)
 }
 
 type riskManager struct {

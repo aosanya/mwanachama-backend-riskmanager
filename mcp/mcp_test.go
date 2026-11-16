@@ -112,8 +112,8 @@ func listed(t *testing.T, ctx context.Context, cs *gosdkmcp.ClientSession) map[s
 func TestEveryDeclaredOperationIsAToolThatNamesItsInstance(t *testing.T) {
 	cs, ctx := connect(t, byInstance(nil), routes.Mount{})
 	tools := listed(t, ctx, cs)
-	if len(tools) != 32 {
-		t.Fatalf("listed %d tools, want the 32 the operations file declares", len(tools))
+	if len(tools) != 33 {
+		t.Fatalf("listed %d tools, want the 33 the operations file declares", len(tools))
 	}
 	for name, tl := range tools {
 		raw, _ := json.Marshal(tl.InputSchema)

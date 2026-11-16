@@ -35,6 +35,9 @@ type (
 	PathwayFilter    = models.PathwayFilter
 	MeasureFilter    = models.MeasureFilter
 	GapFilter        = models.GapFilter
+	MatchFilter      = models.MatchFilter
+	MatchOption      = models.MatchOption
+	Matches          = models.Matches
 	BarrierChange    = models.BarrierChange
 )
 
