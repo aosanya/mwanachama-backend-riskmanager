@@ -41,3 +41,7 @@ The backend changed `control.go` and `manager.go` for hub issue MUN706 (simultan
 One commit here per hub commit or group, each naming the hub hash: f6cc1497 and de289377 (owner and add-a-risk tests), 83963ee8 (find by name, gaps by owner), 97ba9274, 34bf2ecb and 83754c63 (walk tests, one commit each), c556f11d (author tests), cd42c031 and 98579506 (control names fold), e09d6105 (500-row cap, offset paging), 5a2fbc4b (route coverage). The hub's municipality libraries and tests (08d3f0bc, 4347d412) were added and removed again by b27efe61 and net to nothing, so they are not carried.
 
 `gaps_scale_test.go` reads the 520 gaps of 130 risks in pages of `MaxPage`, because one answer is capped at 500 rows since e09d6105. The operation counts in `mcp/mcp_test.go` and `routes/routes_test.go` are 33 since `match_names` (83963ee8).
+
+## Result of 2026-11-19
+
+The live run still prints the two MUN706 differences (`control.go`, `manager.go`) plus `models/control.go`, `provision.go` and `riskmanager.blueprint.json`, which carry the same change, and nothing is `Only in hub`. Every difference and its disposition is on [hub-import-drift.md](hub-import-drift.md).

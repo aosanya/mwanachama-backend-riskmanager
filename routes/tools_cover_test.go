@@ -21,20 +21,20 @@ func actionsOf(rts []routes.Route) []string {
 	return out
 }
 
-func TestRoutesAndRoutesForBuildTheSameThirtyTwoActions(t *testing.T) {
+func TestRoutesAndRoutesForBuildTheSameThirtyThreeActions(t *testing.T) {
 	rm, _ := newManager(t)
 	plain := actionsOf(routes.Routes(rm))
 	mounted := actionsOf(routes.RoutesFor(rm, routes.Mount{Caller: func(context.Context) string { return "actor-1" }}))
-	if len(plain) != 32 || strings.Join(plain, ",") != strings.Join(mounted, ",") {
-		t.Fatalf("plain %d actions, mounted %d, want the same 32", len(plain), len(mounted))
+	if len(plain) != 33 || strings.Join(plain, ",") != strings.Join(mounted, ",") {
+		t.Fatalf("plain %d actions, mounted %d, want the same 33", len(plain), len(mounted))
 	}
 }
 
 func TestSplitLeavesNothingAnonymousAndGatesAllAddresses(t *testing.T) {
 	rm, _ := newManager(t)
 	split := routes.Split(rm, routes.Mount{Authorize: func(context.Context, string) error { return nil }})
-	if len(split.Anonymous) != 0 || len(split.Gated) != 32 {
-		t.Fatalf("anonymous %d, gated %d, want 0 and 32", len(split.Anonymous), len(split.Gated))
+	if len(split.Anonymous) != 0 || len(split.Gated) != 33 {
+		t.Fatalf("anonymous %d, gated %d, want 0 and 33", len(split.Anonymous), len(split.Gated))
 	}
 }
 

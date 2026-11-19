@@ -137,7 +137,7 @@ what was said. A wrong or outdated record is corrected by recording another.
 
 ## The route table is declared
 
-`riskmanager.operations.json` declares all thirty-two addresses, and
+`riskmanager.operations.json` declares all thirty-three addresses, and
 `routes/routes.go` is an adapter over `mwanachama-backend-shared/dispatch`.
 There are no hand-written handlers. See
 [documentation/2. design/routes.md](documentation/2.%20design/routes.md).
